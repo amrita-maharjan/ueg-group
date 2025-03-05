@@ -178,14 +178,16 @@ const GroupTable = () => {
             {isGroupLoading ? <Loader color="blue" size={"sm"} /> : null}
           </Flex>
           <LoadingOverlay visible={isMembersLoading} />
-          <ScrollArea mt={"3%"} style={{ maxHeight: "65vh", overflow: "auto" }}>
+          <ScrollArea
+            style={{ height: "calc(100vh - 220px", overflow: "auto" }}
+          >
             <Table
               style={{
                 borderRadius: "16px",
               }}
               horizontalSpacing="xl"
               verticalSpacing="md"
-              mah={"80vh"}
+              h={"calc(100vh - 220px"}
               mih={"50vh"}
               stickyHeader
               captionSide="bottom"
@@ -218,19 +220,48 @@ const GroupTable = () => {
                   <Table.Th>Claim Access Url</Table.Th>
                 </Table.Tr>
               </Table.Thead>
-
               <Table.Tbody>{rows}</Table.Tbody>
             </Table>
           </ScrollArea>
         </Stack>
-        <Stack justify="flex-end">
-          <Flex justify={"space-between"}>
-            <Checkbox
-              size="md"
-              label="Auto-redeem the generated the voucher?"
-              disabled={selectedRowIds.length === 0}
-            />
-            {/* <Modal
+        <Flex justify={"space-between"} align={"center"}>
+          <Checkbox
+            size="md"
+            label="Auto-redeem the generated the voucher?"
+            disabled={selectedRowIds.length === 0}
+          />
+          <Button
+            size="lg"
+            justify="center"
+            rightSection={<IconArrowRight size={14} />}
+            disabled={selectedRowIds.length === 0}
+            onClick={open}
+            w={"20%"}
+          >
+            Generate
+          </Button>
+        </Flex>
+      </Stack>
+      <Modal opened={opened} onClose={close}>
+        <Stack>
+          <Text fw={"500"} size="lg">
+            Confirm Voucher Generation
+          </Text>
+          <Text>
+            Are you sure you want to generate voucher for the selected
+            participants?
+          </Text>
+          <Flex gap={"lg"} justify={"flex-end"}>
+            <Button variant="default" size="md" onClick={close} w={"100"}>
+              Cancel
+            </Button>
+            <Button variant="filled" size="md" onClick={close} w={"100"}>
+              Ok
+            </Button>
+          </Flex>
+        </Stack>
+      </Modal>
+      {/* <Modal
               opened={opened}
               title="Selected Row Details"
               onClose={close}
@@ -265,39 +296,6 @@ const GroupTable = () => {
                 <p>No rows selected</p>
               )}
             </Modal> */}
-            <Modal opened={opened} onClose={close}>
-              <Stack>
-                <Text fw={"500"} size="lg">
-                  Confirm Voucher Generation
-                </Text>
-                <Text>
-                  Are you sure you want to generate voucher for the selected
-                  participants?
-                </Text>
-                <Flex gap={"lg"} justify={"flex-end"}>
-                  <Button variant="default" size="md" onClick={close} w={"100"}>
-                    Cancel
-                  </Button>
-                  <Button variant="filled" size="md" onClick={close} w={"100"}>
-                    Ok
-                  </Button>
-                </Flex>
-              </Stack>
-            </Modal>
-
-            <Button
-              size="lg"
-              justify="center"
-              rightSection={<IconArrowRight size={14} />}
-              disabled={selectedRowIds.length === 0}
-              onClick={open}
-              w={"20%"}
-            >
-              Generate
-            </Button>
-          </Flex>
-        </Stack>
-      </Stack>
     </>
   );
 };
