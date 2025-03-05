@@ -2,11 +2,9 @@ import {
   Button,
   Checkbox,
   Flex,
-  Loader,
   LoadingOverlay,
   Modal,
   ScrollArea,
-  Select,
   Stack,
   Table,
   Text,
@@ -15,28 +13,20 @@ import { useEffect, useState } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { IconArrowRight } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
-import { Group } from "../types/Group";
 import { GroupMembers } from "../types/GroupMembers";
 import Header from "../components/Header";
 import { notifications } from "@mantine/notifications";
+import { useAuthHeader } from "../hooks.tsx/useAuthHeader";
 
 const GroupTable = () => {
   const navigate = useNavigate();
   const [selectedRowData, setSelectedRowData] = useState<GroupMembers[]>([]);
   const [groupMembers, setGroupMembers] = useState<GroupMembers[]>([]);
-  const [groups, setGroups] = useState<Group[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(false);
-  const [isGroupLoading, setIsGroupLoading] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
 
-  const encodeCredentials = (username: string, password: string) => {
-    return btoa(`${username}:${password}`);
-  };
-
-  const username = localStorage.getItem("uName") ?? "null";
-  const password = localStorage.getItem("password") ?? "null";
-  const authHeader = `Basic ${encodeCredentials(username, password)}`;
+  const authHeader = useAuthHeader();
 
   useEffect(() => {
     const username = localStorage.getItem("uName");
@@ -46,32 +36,13 @@ const GroupTable = () => {
     }
   }, []);
 
-  useEffect(() => {
-    setIsGroupLoading(true);
-    fetch(
-      `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: authHeader,
-        },
-      }
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setGroups(data);
-        setIsGroupLoading(false);
-      });
-  }, []);
-
   const fetchGroupMemberById = (contactId: string) => {
     setIsMembersLoading(true);
     fetch(
       `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups/${contactId}`,
       {
         headers: {
-          Authorization: "Basic YWRtaW46MTIzNA",
+          Authorization: authHeader,
         },
       }
     )
@@ -154,29 +125,8 @@ const GroupTable = () => {
   return (
     <>
       <Stack h={"100vh"} p={"xl"} gap={"xl"}>
-        <Header />
+        <Header onGroupSelect={(id) => fetchGroupMemberById(id)} />
         <Stack gap={"sm"}>
-          <Flex align={"center"} gap={"md"}>
-            <Select
-              size="md"
-              w={"30%"}
-              bg={"white"}
-              placeholder="Select a group"
-              data={groups.map((comment) => {
-                return {
-                  value: String(comment.contactId),
-                  label: comment.name ? comment.name.toLowerCase() : "No Name",
-                  key: String(comment.contactId),
-                };
-              })}
-              onChange={(id) => {
-                if (id) {
-                  fetchGroupMemberById(id);
-                }
-              }}
-            />
-            {isGroupLoading ? <Loader color="blue" size={"sm"} /> : null}
-          </Flex>
           <LoadingOverlay visible={isMembersLoading} />
           <ScrollArea
             style={{ height: "calc(100vh - 220px", overflow: "auto" }}
@@ -191,9 +141,8 @@ const GroupTable = () => {
               mih={"50vh"}
               stickyHeader
               captionSide="bottom"
-              striped
               highlightOnHover
-              withTableBorder
+              withColumnBorders
             >
               <Table.Thead
                 bg="rgba(243, 243, 243, 1)"
@@ -224,38 +173,33 @@ const GroupTable = () => {
             </Table>
           </ScrollArea>
         </Stack>
-        <Flex justify={"space-between"} align={"center"}>
-          <Checkbox
-            size="md"
-            label="Auto-redeem the generated the voucher?"
-            disabled={selectedRowIds.length === 0}
-          />
+        <Stack align="flex-end">
           <Button
-            size="lg"
             justify="center"
             rightSection={<IconArrowRight size={14} />}
             disabled={selectedRowIds.length === 0}
             onClick={open}
-            w={"20%"}
           >
             Generate
           </Button>
-        </Flex>
+          <Checkbox
+            label="Auto-redeem the generated the voucher?"
+            disabled={selectedRowIds.length === 0}
+          />
+        </Stack>
       </Stack>
       <Modal opened={opened} onClose={close}>
         <Stack>
-          <Text fw={"500"} size="lg">
-            Confirm Voucher Generation
-          </Text>
+          <Text fw={"500"}>Confirm Voucher Generation</Text>
           <Text>
             Are you sure you want to generate voucher for the selected
             participants?
           </Text>
           <Flex gap={"lg"} justify={"flex-end"}>
-            <Button variant="default" size="md" onClick={close} w={"100"}>
+            <Button variant="default" onClick={close}>
               Cancel
             </Button>
-            <Button variant="filled" size="md" onClick={close} w={"100"}>
+            <Button variant="filled" onClick={close}>
               Ok
             </Button>
           </Flex>
