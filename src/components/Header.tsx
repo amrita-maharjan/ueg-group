@@ -1,21 +1,20 @@
 import {
-  Button,
-  Stack,
-  Flex,
-  Text,
-  Avatar,
-  HoverCard,
   AppShell,
-  Burger,
-  Switch,
+  Avatar,
+  Button,
   Divider,
+  Flex,
+  HoverCard,
+  Stack,
+  Switch,
+  Text,
 } from "@mantine/core";
-import { IconSun, IconMoonStars } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
-import { MantineLogo } from "@mantinex/mantine-logo";
+import { IconMoonStars, IconSun } from "@tabler/icons-react";
 
 import { useComputedColorScheme, useMantineColorScheme } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
+import { Logo } from "./Logo";
 
 const Header = () => {
   const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
@@ -43,13 +42,11 @@ const Header = () => {
         padding="md"
       >
         <AppShell.Header>
-          <Flex justify={"space-between"} px={"md"} align={"center"} h={"100%"}>
-            <Flex gap={"md"}>
-              <MantineLogo size={30} />
-            </Flex>
+          <Flex justify={"space-between"} px={"xl"} align={"center"} h={"100%"}>
+            <Logo />
             <HoverCard width={280} shadow="md">
               <HoverCard.Target>
-                <Avatar size={"md"}>{userInfo[0]}</Avatar>
+                <Avatar size={"md"}>{userInfo[0].toUpperCase()}</Avatar>
               </HoverCard.Target>
               <HoverCard.Dropdown>
                 <Stack>

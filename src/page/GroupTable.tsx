@@ -1,16 +1,15 @@
 import {
-  Box,
   Button,
   Checkbox,
   Flex,
   Loader,
   LoadingOverlay,
   Modal,
-  Text,
   ScrollArea,
   Select,
   Stack,
   Table,
+  Text,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 
@@ -76,7 +75,6 @@ const GroupTable = () => {
       });
   }, []);
 
-  //TODO: GIVE APPROPRIATE NAME TO THIS FUNCTION
   const fetchGroupMemberById = (contactId: string) => {
     setIsMembersLoading(true);
     fetch(
@@ -109,6 +107,7 @@ const GroupTable = () => {
 
   const allSelected =
     selectedRowIds.length === groupMembers.length && groupMembers.length > 0;
+
   const someSelected =
     selectedRowIds.length > 0 && selectedRowIds.length < groupMembers.length;
 
@@ -255,35 +254,20 @@ const GroupTable = () => {
                 <p>No rows selected</p>
               )}
             </Modal> */}
-            <Modal opened={opened} onClose={close} centered>
+            <Modal opened={opened} onClose={close}>
               <Stack>
-                <Text fw={"700"} size="xl">
+                <Text fw={"500"} size="lg">
                   Confirm Voucher Generation
                 </Text>
-                <Text size="md">
-                  Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                  Autem qui quisquam id accusamus corrupti, sapiente assumenda
-                  temporibus necessitatibus est nesciunt quam porro ipsa
-                  perspiciatis. Reprehenderit, modi exercitationem? Eius, libero
-                  eaque.
+                <Text>
+                  Are you sure you want to generate voucher for the selected
+                  participants?
                 </Text>
                 <Flex gap={"lg"} justify={"flex-end"}>
-                  <Button
-                    variant="default"
-                    size="md"
-                    onClick={close}
-                    radius={"xl"}
-                    w={"100"}
-                  >
+                  <Button variant="default" size="md" onClick={close} w={"100"}>
                     Cancel
                   </Button>
-                  <Button
-                    variant="filled"
-                    size="md"
-                    onClick={close}
-                    radius={"xl"}
-                    w={"100"}
-                  >
+                  <Button variant="filled" size="md" onClick={close} w={"100"}>
                     Ok
                   </Button>
                 </Flex>
