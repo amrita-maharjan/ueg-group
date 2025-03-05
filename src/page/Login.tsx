@@ -94,7 +94,14 @@ export function Login() {
       pt={"10%"}
     >
       {/*   //TODO: Make this rounded */}
-      <Container h={400} bg={"white"} w={600} m="auto" p="xl">
+      <Container
+        h={400}
+        bg={"white"}
+        w={600}
+        m="auto"
+        p="xl"
+        style={{ borderRadius: "16px" }}
+      >
         <Stack>
           <Title order={1}>Sign in to your account</Title>
           <form

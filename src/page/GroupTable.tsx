@@ -6,6 +6,7 @@ import {
   Loader,
   LoadingOverlay,
   Modal,
+  Text,
   ScrollArea,
   Select,
   Stack,
@@ -41,16 +42,17 @@ const GroupTable = () => {
   };
 
   //TODO: Replace with your own credentials from local storage
-  const username = "admin";
-  const password = "1234";
+
+  const username = localStorage.getItem("uName") ?? "null";
+  const password = localStorage.getItem("password") ?? "null";
   const authHeader = `Basic ${encodeCredentials(username, password)}`;
 
   useEffect(() => {
     //TODO: Replace let with const
     //TODO: Use proper variable name
-    let userInfo = localStorage.getItem("uName");
-    let pass = localStorage.getItem("password");
-    if (!userInfo || !pass) {
+    const username = localStorage.getItem("uName");
+    const password = localStorage.getItem("password");
+    if (!username || !password) {
       navigate("/login");
     }
   }, []);
@@ -75,7 +77,7 @@ const GroupTable = () => {
   }, []);
 
   //TODO: GIVE APPROPRIATE NAME TO THIS FUNCTION
-  const fetchPostCommentsById = (contactId: string) => {
+  const fetchGroupMemberById = (contactId: string) => {
     setIsMembersLoading(true);
     fetch(
       `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups/${contactId}`,
@@ -142,9 +144,9 @@ const GroupTable = () => {
 
   return (
     <>
-      <Stack h={"100vh"} gap={"xl"} p={"xl"}>
-        <Header />
-        <Stack>
+      <Stack h={"100vh"} p={"xl"} justify="space-between">
+        <Stack gap={"xl"}>
+          <Header />
           <Flex align={"center"} gap={"md"}>
             <Select
               size="md"
@@ -160,7 +162,7 @@ const GroupTable = () => {
               })}
               onChange={(id) => {
                 if (id) {
-                  fetchPostCommentsById(id);
+                  fetchGroupMemberById(id);
                 }
               }}
             />
@@ -211,13 +213,14 @@ const GroupTable = () => {
             </Table>
           </ScrollArea>
         </Stack>
-        <Stack mb={"3%"}>
+        <Stack justify="flex-end">
           <Flex justify={"space-between"}>
             <Checkbox
               size="md"
               label="Auto-redeem the generated the voucher?"
+              disabled={selectedRowIds.length === 0}
             />
-            <Modal
+            {/* <Modal
               opened={opened}
               title="Selected Row Details"
               onClose={close}
@@ -251,6 +254,40 @@ const GroupTable = () => {
               ) : (
                 <p>No rows selected</p>
               )}
+            </Modal> */}
+            <Modal opened={opened} onClose={close} centered>
+              <Stack>
+                <Text fw={"700"} size="xl">
+                  Confirm Voucher Generation
+                </Text>
+                <Text size="md">
+                  Lorem ipsum dolor, sit amet consectetur adipisicing elit.
+                  Autem qui quisquam id accusamus corrupti, sapiente assumenda
+                  temporibus necessitatibus est nesciunt quam porro ipsa
+                  perspiciatis. Reprehenderit, modi exercitationem? Eius, libero
+                  eaque.
+                </Text>
+                <Flex gap={"lg"} justify={"flex-end"}>
+                  <Button
+                    variant="default"
+                    size="md"
+                    onClick={close}
+                    radius={"xl"}
+                    w={"100"}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="filled"
+                    size="md"
+                    onClick={close}
+                    radius={"xl"}
+                    w={"100"}
+                  >
+                    Ok
+                  </Button>
+                </Flex>
+              </Stack>
             </Modal>
 
             <Button

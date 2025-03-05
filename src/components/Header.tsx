@@ -15,6 +15,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { MantineLogo } from "@mantinex/mantine-logo";
 
 import { useComputedColorScheme, useMantineColorScheme } from "@mantine/core";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
@@ -24,9 +25,12 @@ const Header = () => {
   const toggleColorScheme = () => {
     setColorScheme(computedColorScheme === "dark" ? "light" : "dark");
   };
-
+  const navigate = useNavigate();
   let userInfo = localStorage.getItem("uName") ?? "null";
-
+  const handleLogOut = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
   return (
     <>
       <AppShell
@@ -49,20 +53,6 @@ const Header = () => {
               </HoverCard.Target>
               <HoverCard.Dropdown>
                 <Stack>
-                  <Text fw={500}>Account</Text>
-                  <Flex gap={"5%"}>
-                    <Avatar size={"md"}>{userInfo[0]}</Avatar>
-                  </Flex>
-                  <Text>Manage Account</Text>
-                  <Divider></Divider>
-                  <Text>Open QuickStart</Text>
-                  <Text size="sm">Jira</Text>
-                  <Text>Profile</Text>
-                  <Text>Personal Setting</Text>
-                  <Flex justify={"space-between"}>
-                    <Text>Notification</Text>
-                    <Text size="sm">New</Text>
-                  </Flex>
                   <Flex justify={"space-between"}>
                     <Text>Theme</Text>
                     <Switch
@@ -86,7 +76,7 @@ const Header = () => {
                     />
                   </Flex>
                   <Divider></Divider>
-                  <Text>Log out</Text>
+                  <Button onClick={handleLogOut}>Log Out</Button>
                 </Stack>
               </HoverCard.Dropdown>
             </HoverCard>
