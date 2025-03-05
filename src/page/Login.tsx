@@ -2,19 +2,20 @@ import {
   Button,
   Container,
   Group,
+  Loader,
   PasswordInput,
+  Stack,
   TextInput,
   Title,
-  Loader,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { notifications } from "@mantine/notifications";
 
 export function Login() {
   const navigate = useNavigate();
-  const [isloading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm({
     mode: "uncontrolled",
@@ -33,7 +34,6 @@ export function Login() {
         if (!value) {
           return "Invalid password";
         }
-
         return;
       },
     },
@@ -71,7 +71,7 @@ export function Login() {
           });
         }
       })
-      .then((data) => {
+      .then(() => {
         setIsLoading(false);
       })
       .catch((err) => {
@@ -80,57 +80,57 @@ export function Login() {
         notifications.show({
           color: "red",
           title: "Error",
-          message: "Error occured!",
+          message: "Error occurred!",
         });
       });
   };
 
   return (
-    <Container bg={"aliceblue"} h={"100vh"} w={"100vw"} maw={"100vw"} pt={"6%"}>
-      <Container
-        h={500}
-        bg={"white"}
-        w={600}
-        pt={"5%"}
-        pl={"2%"}
-        pr={"2%"}
-        ml={"30%"}
-      >
-        <Title order={1}>Sign in to your account</Title>
-        <form
-          onSubmit={form.onSubmit((values) => {
-            handleSubmit(values);
-          })}
-        >
-          <TextInput
-            label="Enter your UserName"
-            mt={"5%"}
-            radius="md"
-            placeholder="Enter your username"
-            key={form.key("uName")}
-            {...form.getInputProps("uName")}
-          />
-          <PasswordInput
-            label="enter your password"
-            mt={"5%"}
-            radius="md"
-            placeholder="Enter your password"
-            key={form.key("password")}
-            {...form.getInputProps("password")}
-          />
-          <Group justify="flex-end" mt="md">
-            <Button
-              type="submit"
-              rightSection={
-                isloading ? <Loader color="white" size={15} /> : null
-              }
-              fullWidth
-              mt={"5%"}
-            >
-              Log in
-            </Button>
-          </Group>
-        </form>
+    <Container
+      bg={"aliceblue"}
+      h={"100vh"}
+      w={"100vw"}
+      maw={"100vw"}
+      pt={"10%"}
+    >
+      {/*   //TODO: Make this rounded */}
+      <Container h={400} bg={"white"} w={600} m="auto" p="xl">
+        <Stack>
+          <Title order={1}>Sign in to your account</Title>
+          <form
+            onSubmit={form.onSubmit((values) => {
+              handleSubmit(values);
+            })}
+          >
+            <Stack gap={"lg"}>
+              <TextInput
+                label="Enter your username"
+                radius="md"
+                placeholder="Enter your username"
+                key={form.key("uName")}
+                {...form.getInputProps("uName")}
+              />
+              <PasswordInput
+                label="Enter your password"
+                radius="md"
+                placeholder="Enter your password"
+                key={form.key("password")}
+                {...form.getInputProps("password")}
+              />
+              <Group justify="flex-end" mt="md">
+                <Button
+                  type="submit"
+                  rightSection={
+                    isLoading ? <Loader color="white" size={15} /> : null
+                  }
+                  fullWidth
+                >
+                  Log in
+                </Button>
+              </Group>
+            </Stack>
+          </form>
+        </Stack>
       </Container>
     </Container>
   );
