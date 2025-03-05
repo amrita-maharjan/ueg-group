@@ -10,8 +10,7 @@ import {
 import { useForm } from "@mantine/form";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-//   import { notifications } from "@mantine/notifications";
+import { notifications } from "@mantine/notifications";
 
 export function Login() {
   const navigate = useNavigate();
@@ -24,7 +23,6 @@ export function Login() {
       password: "",
     },
     validate: {
-      // email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
       uName: (value: any) => {
         if (!value) {
           return "Invalid username";
@@ -35,7 +33,7 @@ export function Login() {
         if (!value) {
           return "Invalid password";
         }
-        // return /^(?=.*[a-z])(?=.*[A-Z]){8,}$/.test(value);
+
         return;
       },
     },
@@ -54,37 +52,37 @@ export function Login() {
         password: values.password,
       }),
     })
-      // .then((response) => {
-      //   if (!response.ok) {
-      //     return notifications.show({
-      //       color: "red",
-      //       title: "Error",
-      //       message: "Incorrect credentials!",
-      //     });
-      //   } else {
-      //     localStorage.setItem("uName", values.uName);
-      //     localStorage.setItem("password", values.password);
-      //     navigate("/");
-      //     notifications.show({
-      //       color: "green",
-      //       title: "Successfull",
-      //       message: "Logged in successfully!",
-      //     });
-      //   }
-      // })
-      .then((response) => response.json())
+      .then((response) => {
+        setIsLoading(false);
+        if (!response.ok) {
+          notifications.show({
+            color: "red",
+            title: "Error",
+            message: "Incorrect credentials!",
+          });
+        } else {
+          localStorage.setItem("uName", values.uName);
+          localStorage.setItem("password", values.password);
+          navigate("/");
+          notifications.show({
+            color: "green",
+            title: "Success",
+            message: "Logged in successfully!",
+          });
+        }
+      })
       .then((data) => {
         setIsLoading(false);
+      })
+      .catch((err) => {
+        console.log(err.message);
+        setIsLoading(false);
+        notifications.show({
+          color: "red",
+          title: "Error",
+          message: "Error occured!",
+        });
       });
-    // .catch((err) => {
-    //   console.log(err.message);
-    //   setIsLoading(false);
-    //   notifications.show({
-    //     color: "red",
-    //     title: "Error",
-    //     message: "Error occured!",
-    //   });
-    // });
   };
 
   return (
@@ -131,12 +129,9 @@ export function Login() {
             >
               Log in
             </Button>
-            {/* )} */}
           </Group>
         </form>
       </Container>
     </Container>
   );
 }
-
-export default Login;
