@@ -12,43 +12,33 @@ import {
   Text,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
-
 import { useDisclosure } from "@mantine/hooks";
-
 import { IconArrowRight } from "@tabler/icons-react";
-
 import { useNavigate } from "react-router-dom";
 import { Group } from "../types/Group";
 import { GroupMembers } from "../types/GroupMembers";
-
 import Header from "../components/Header";
+import { notifications } from "@mantine/notifications";
 
 const GroupTable = () => {
   const navigate = useNavigate();
-
   const [selectedRowData, setSelectedRowData] = useState<GroupMembers[]>([]);
   const [groupMembers, setGroupMembers] = useState<GroupMembers[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
-
   const [isMembersLoading, setIsMembersLoading] = useState(false);
   const [isGroupLoading, setIsGroupLoading] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
-
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
 
   const encodeCredentials = (username: string, password: string) => {
     return btoa(`${username}:${password}`);
   };
 
-  //TODO: Replace with your own credentials from local storage
-
   const username = localStorage.getItem("uName") ?? "null";
   const password = localStorage.getItem("password") ?? "null";
   const authHeader = `Basic ${encodeCredentials(username, password)}`;
 
   useEffect(() => {
-    //TODO: Replace let with const
-    //TODO: Use proper variable name
     const username = localStorage.getItem("uName");
     const password = localStorage.getItem("password");
     if (!username || !password) {
@@ -89,6 +79,15 @@ const GroupTable = () => {
       .then((json) => {
         setGroupMembers(json);
         setIsMembersLoading(false);
+      })
+      .catch((err) => {
+        console.log(err.message);
+        setIsMembersLoading(false);
+        notifications.show({
+          color: "red",
+          title: "Error",
+          message: "Error occurred!",
+        });
       });
   };
 
@@ -111,6 +110,17 @@ const GroupTable = () => {
   const someSelected =
     selectedRowIds.length > 0 && selectedRowIds.length < groupMembers.length;
 
+  const getShouldShowSelectAll = () => {
+    let shouldShowSelectAll = false;
+    for (let i = 0; i < groupMembers.length; i++) {
+      if (!groupMembers[i].activationCodeFormatted) {
+        shouldShowSelectAll = true;
+        break;
+      }
+    }
+    return shouldShowSelectAll;
+  };
+
   const toggleSelectAll = () => {
     if (selectedRowIds.length === groupMembers.length) {
       setSelectedRowIds([]);
@@ -124,7 +134,7 @@ const GroupTable = () => {
   const rows = groupMembers.map((post) => (
     <Table.Tr key={post.id}>
       <Table.Td>
-        {!post.activationCode && (
+        {!post.activationCodeFormatted && (
           <Checkbox
             key={post.id}
             checked={selectedRowIds.includes(post.id)}
@@ -143,9 +153,9 @@ const GroupTable = () => {
 
   return (
     <>
-      <Stack h={"100vh"} p={"xl"} justify="space-between">
-        <Stack gap={"xl"}>
-          <Header />
+      <Stack h={"100vh"} p={"xl"} gap={"xl"}>
+        <Header />
+        <Stack gap={"sm"}>
           <Flex align={"center"} gap={"md"}>
             <Select
               size="md"
@@ -171,8 +181,7 @@ const GroupTable = () => {
           <ScrollArea mt={"3%"} style={{ maxHeight: "65vh", overflow: "auto" }}>
             <Table
               style={{
-                fontFamily: "Arial",
-                height: "auto",
+                borderRadius: "16px",
               }}
               horizontalSpacing="xl"
               verticalSpacing="md"
@@ -193,11 +202,13 @@ const GroupTable = () => {
               >
                 <Table.Tr>
                   <Table.Td>
-                    <Checkbox
-                      checked={allSelected}
-                      indeterminate={someSelected}
-                      onChange={toggleSelectAll}
-                    />
+                    {getShouldShowSelectAll() ? (
+                      <Checkbox
+                        checked={allSelected}
+                        indeterminate={someSelected}
+                        onChange={toggleSelectAll}
+                      />
+                    ) : null}
                   </Table.Td>
                   <Table.Th>First Name</Table.Th>
                   <Table.Th>Last Name</Table.Th>

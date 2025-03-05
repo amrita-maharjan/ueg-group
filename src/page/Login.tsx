@@ -93,7 +93,6 @@ export function Login() {
       maw={"100vw"}
       pt={"10%"}
     >
-      {/*   //TODO: Make this rounded */}
       <Container
         h={400}
         bg={"white"}
