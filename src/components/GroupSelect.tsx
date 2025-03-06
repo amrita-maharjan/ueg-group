@@ -32,7 +32,11 @@ export const GroupSelect = ({ onGroupSelect }: Props) => {
         setIsGroupLoading(false);
       });
   }, []);
-
+  const sortedData = [...groups].sort((a, b) => {
+    const numA = parseInt(a.name.split("_")[0], 10);
+    const numB = parseInt(b.name.split("_")[0], 10);
+    return numA - numB;
+  });
   return (
     <Flex align={"center"} gap={"md"} w="100%">
       <Select
@@ -40,7 +44,7 @@ export const GroupSelect = ({ onGroupSelect }: Props) => {
         w={"20vw"}
         bg={"white"}
         placeholder="Select a group"
-        data={groups.map((comment) => {
+        data={sortedData.map((comment) => {
           return {
             value: String(comment.contactId),
             label: comment.name ? comment.name.toLowerCase() : "No Name",
