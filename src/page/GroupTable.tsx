@@ -51,8 +51,7 @@ const GroupTable = () => {
         setGroupMembers(json);
         setIsMembersLoading(false);
       })
-      .catch((err) => {
-        console.log(err.message);
+      .catch(() => {
         setIsMembersLoading(false);
         notifications.show({
           color: "red",
@@ -62,16 +61,16 @@ const GroupTable = () => {
       });
   };
 
-  const handleRowSelection = (post: any) => {
+  const handleRowSelection = (groupMember: GroupMembers) => {
     setSelectedRowIds((prev) =>
-      prev.includes(post.id)
-        ? prev.filter((id) => id !== post.id)
-        : [...prev, post.id]
+      prev.includes(groupMember.id)
+        ? prev.filter((id) => id !== groupMember.id)
+        : [...prev, groupMember.id]
     );
     setSelectedRowData((prev) =>
-      prev.some((row) => row.id === post.id)
-        ? prev.filter((row) => row.id !== post.id)
-        : [...prev, post]
+      prev.some((row) => row.id === groupMember.id)
+        ? prev.filter((row) => row.id !== groupMember.id)
+        : [...prev, groupMember]
     );
   };
 
@@ -102,22 +101,22 @@ const GroupTable = () => {
       setSelectedRowData(groupMembers);
     }
   };
-  const rows = groupMembers.map((post) => (
-    <Table.Tr key={post.id}>
+  const rows = groupMembers.map((members) => (
+    <Table.Tr key={members.id}>
       <Table.Td>
-        {!post.activationCodeFormatted && (
+        {!members.activationCodeFormatted && (
           <Checkbox
-            key={post.id}
-            checked={selectedRowIds.includes(post.id)}
-            onChange={() => handleRowSelection(post)}
+            key={members.id}
+            checked={selectedRowIds.includes(members.id)}
+            onChange={() => handleRowSelection(members)}
           />
         )}
       </Table.Td>
-      <Table.Td>{post.firstName}</Table.Td>
-      <Table.Td>{post.lastName}</Table.Td>
+      <Table.Td>{members.firstName}</Table.Td>
+      <Table.Td>{members.lastName}</Table.Td>
 
-      <Table.Td>{post.activationCodeFormatted}</Table.Td>
-      <Table.Td>{post.openID}</Table.Td>
+      <Table.Td>{members.activationCodeFormatted}</Table.Td>
+      <Table.Td>{members.openID}</Table.Td>
     </Table.Tr>
   ));
 
