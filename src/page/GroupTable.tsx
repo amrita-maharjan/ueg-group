@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { GroupMembers } from "../types/GroupMembers";
 import Header from "../components/Header";
 import { notifications } from "@mantine/notifications";
-import { useAuthHeader } from "../hooks.tsx/useAuthHeader";
+import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
 
 const GroupTable = () => {
   const navigate = useNavigate();
@@ -115,10 +115,9 @@ const GroupTable = () => {
       </Table.Td>
       <Table.Td>{post.firstName}</Table.Td>
       <Table.Td>{post.lastName}</Table.Td>
-      <Table.Td>{post.activationCode}</Table.Td>
+
       <Table.Td>{post.activationCodeFormatted}</Table.Td>
-      <Table.Td>{post.activationPIN}</Table.Td>
-      <Table.Td>{post.claimAccessURL}</Table.Td>
+      <Table.Td>{post.openID}</Table.Td>
     </Table.Tr>
   ));
 
@@ -163,10 +162,10 @@ const GroupTable = () => {
                   </Table.Td>
                   <Table.Th>First Name</Table.Th>
                   <Table.Th>Last Name</Table.Th>
-                  <Table.Th>Code</Table.Th>
+
                   <Table.Th> Code Formatted</Table.Th>
-                  <Table.Th> Pin</Table.Th>
-                  <Table.Th>Claim Access Url</Table.Th>
+
+                  <Table.Th>Open ID</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>{rows}</Table.Tbody>

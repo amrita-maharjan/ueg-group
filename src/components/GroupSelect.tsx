@@ -1,7 +1,7 @@
 import { Flex, Select, Loader } from "@mantine/core";
 import React from "react";
 import { Group } from "../types/Group";
-import { useAuthHeader } from "../hooks.tsx/useAuthHeader";
+import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
 
 type Props = {
   onGroupSelect: (id: string) => void;
@@ -36,6 +36,7 @@ export const GroupSelect = ({ onGroupSelect }: Props) => {
   return (
     <Flex align={"center"} gap={"md"} w="100%">
       <Select
+        searchable
         w={"20vw"}
         bg={"white"}
         placeholder="Select a group"
