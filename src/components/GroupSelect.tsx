@@ -32,11 +32,8 @@ export const GroupSelect = ({ onGroupSelect }: Props) => {
         setIsGroupLoading(false);
       });
   }, []);
-  const sortedData = [...groups].sort((a, b) => {
-    const numA = parseInt(a.name.split("_")[0], 10);
-    const numB = parseInt(b.name.split("_")[0], 10);
-    return numA - numB;
-  });
+
+  const sortedData = groups.sort((a, b) => a.name.localeCompare(b.name));
   return (
     <Flex align={"center"} gap={"md"} w="100%">
       <Select
