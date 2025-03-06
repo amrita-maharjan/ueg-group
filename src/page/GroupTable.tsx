@@ -7,6 +7,7 @@ import {
   ScrollArea,
   Stack,
   Table,
+  Box,
   Text,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
@@ -25,6 +26,7 @@ const GroupTable = () => {
   const [isMembersLoading, setIsMembersLoading] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
+  const [isChecked, setIsChecked] = useState(false);
 
   const authHeader = useAuthHeader();
 
@@ -120,6 +122,9 @@ const GroupTable = () => {
     </Table.Tr>
   ));
 
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsChecked(event.target.checked);
+  };
   return (
     <>
       <Stack h={"100vh"} p={"xl"} gap={"xl"}>
@@ -183,10 +188,12 @@ const GroupTable = () => {
           <Checkbox
             label="Auto-redeem the generated the voucher?"
             disabled={selectedRowIds.length === 0}
+            onChange={handleCheckboxChange}
+            checked={isChecked}
           />
         </Stack>
       </Stack>
-      <Modal opened={opened} onClose={close}>
+      {/* <Modal opened={opened} onClose={close}>
         <Stack>
           <Text fw={"500"}>Confirm Voucher Generation</Text>
           <Text>
@@ -202,42 +209,49 @@ const GroupTable = () => {
             </Button>
           </Flex>
         </Stack>
+      </Modal> */}
+      <Modal
+        opened={opened}
+        title="Selected Row Details"
+        onClose={close}
+        centered
+      >
+        {selectedRowData.length > 0 ? (
+          <Box>
+            {selectedRowData.map((row) => (
+              <Box key={row.id} mb="sm">
+                {!row.activationCodeFormatted ? (
+                  <>
+                    <p>
+                      <strong>ID:</strong> {row.id}
+                    </p>
+                    <p>
+                      <strong>Firstname:</strong> {row.firstName}
+                    </p>
+                    <p>
+                      <strong>Lastname:</strong> {row.lastName}
+                    </p>
+                    <p>
+                      <strong>Type:</strong> {row.typeForVoucher}
+                    </p>
+                    <p>
+                      <strong>OpenID:</strong>{" "}
+                      {row.openID ? row.openID : "No value"}
+                    </p>
+                    <p>
+                      <strong>Autoreedem:</strong>{" "}
+                      {isChecked ? "checked" : "not checked"}
+                    </p>
+                    <hr />{" "}
+                  </>
+                ) : null}
+              </Box>
+            ))}
+          </Box>
+        ) : (
+          <p>No rows selected</p>
+        )}
       </Modal>
-      {/* <Modal
-              opened={opened}
-              title="Selected Row Details"
-              onClose={close}
-              centered
-            >
-              {selectedRowData.length > 0 ? (
-                <Box>
-                  {selectedRowData.map((row) => (
-                    <Box key={row.id} mb="sm">
-                      {!row.activationCode ? (
-                        <>
-                          <p>
-                            <strong>ID:</strong> {row.id}
-                          </p>
-                          <p>
-                            <strong>Firstname:</strong> {row.firstName}
-                          </p>
-                          <p>
-                            <strong>Lastname</strong> {row.lastName}
-                          </p>
-                          <p>
-                            <strong>ActivationCodeFormatted</strong>{" "}
-                            {row.activationCodeFormatted}
-                          </p>
-                          <hr />{" "}
-                        </>
-                      ) : null}
-                    </Box>
-                  ))}
-                </Box>
-              ) : (
-                <p>No rows selected</p>
-              )}
-            </Modal> */}
     </>
   );
 };
