@@ -27,7 +27,7 @@ const GroupTable = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [isChecked, setIsChecked] = useState(false);
-
+  const [hasOpenId, setHasOpenId] = useState(false);
   const authHeader = useAuthHeader();
 
   useEffect(() => {
@@ -37,7 +37,14 @@ const GroupTable = () => {
       navigate("/login");
     }
   }, []);
+  useEffect(() => {
+    handleAutoRedeem();
+  }, [groupMembers]);
 
+  useEffect(() => {
+    setSelectedRowIds([]);
+    setSelectedRowData([]);
+  }, [groupMembers]);
   const fetchGroupMemberById = (contactId: string) => {
     setIsMembersLoading(true);
     fetch(
@@ -121,6 +128,10 @@ const GroupTable = () => {
       <Table.Td>{members.openID}</Table.Td>
     </Table.Tr>
   ));
+  const handleAutoRedeem = () => {
+    const hasOpenID = groupMembers.some((member) => member.openID);
+    setHasOpenId(hasOpenID);
+  };
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsChecked(event.target.checked);
@@ -187,7 +198,7 @@ const GroupTable = () => {
           </Button>
           <Checkbox
             label="Auto-redeem the generated the voucher?"
-            disabled={selectedRowIds.length === 0}
+            disabled={!hasOpenId}
             onChange={handleCheckboxChange}
             checked={isChecked}
           />
