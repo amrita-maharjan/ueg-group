@@ -35,6 +35,7 @@ export const GroupSelect = ({ onGroupSelect, dropdownOpened }: Props) => {
   }, []);
 
   const sortedData = groups.sort((a, b) => a.name.localeCompare(b.name));
+
   return (
     <Flex align={"center"} gap={"md"} w="100%">
       <Select
@@ -42,7 +43,7 @@ export const GroupSelect = ({ onGroupSelect, dropdownOpened }: Props) => {
         w={"20vw"}
         bg={"white"}
         placeholder="Select a group"
-        dropdownOpened={dropdownOpened}
+        // dropdownOpened={dropdownOpened}
         data={sortedData.map((comment) => {
           return {
             value: String(comment.contactId),
