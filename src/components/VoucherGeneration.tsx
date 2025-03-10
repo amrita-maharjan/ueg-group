@@ -81,9 +81,55 @@ export const VoucherGeneration = ({ GenerateModal }: Props) => {
 
   return (
     <>
-      <Modal opened={opened} onClose={close} title="Authentication">
-        {/* Modal content */}
-      </Modal>
+      <Modal
+        opened={opened}
+        title="Selected Row Details"
+        onClose={close}
+        centered
+      >
+        {RowData.length > 0 ? (
+          <Box>
+            {RowData.map((row) => (
+              <Box key={row.id} mb="sm">
+                {!row.activationCodeFormatted ? (
+                  <>
+                    <p>
+                      <strong>GroupId:</strong>
+                      {groupId}
+                    </p>
+                    <p>
+                      <strong>GroupName:</strong>
+                      {groupName}
+                    </p>
+                    <p>
+                      <strong>ID:</strong> {row.id}
+                    </p>
+                    <p>
+                      <strong>Firstname:</strong> {row.firstName}
+                    </p>
+                    <p>
+                      <strong>Lastname:</strong> {row.lastName}
+                    </p>
+                    <p>
+                      <strong>Type:</strong> {row.typeForVoucher}
+                    </p>
+                    <p>
+                      <strong>OpenID:</strong>{" "}
+                      {row.openID ? row.openID : "No value"}
+                    </p>
+                    <p>
+                      <strong>Autoreedem:</strong>{" "}
+                      {isChecked ? "checked" : "not checked"}
+                    </p>
+                    <hr />{" "}
+                  </>
+                ) : null}
+              </Box>
+            ))}
+          </Box>
+        ) : (
+          <p>No rows selected</p>
+        )}
 
       <Button variant="default" onClick={open}>
         Open modal

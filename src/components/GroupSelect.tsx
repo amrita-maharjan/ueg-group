@@ -1,13 +1,14 @@
-import { Flex, Select, Loader } from "@mantine/core";
+import { Flex, Button, Select, Loader } from "@mantine/core";
 import React from "react";
 import { Group } from "../types/Group";
 import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
 
 type Props = {
   onGroupSelect: (id: string, name: string) => void;
+  dropdownOpened: boolean;
 };
 
-export const GroupSelect = ({ onGroupSelect }: Props) => {
+export const GroupSelect = ({ onGroupSelect, dropdownOpened }: Props) => {
   const [isGroupLoading, setIsGroupLoading] = React.useState<boolean>(false);
   const [groups, setGroups] = React.useState<Group[]>([]);
 
@@ -41,6 +42,7 @@ export const GroupSelect = ({ onGroupSelect }: Props) => {
         w={"20vw"}
         bg={"white"}
         placeholder="Select a group"
+        dropdownOpened={dropdownOpened}
         data={sortedData.map((comment) => {
           return {
             value: String(comment.contactId),
@@ -48,11 +50,6 @@ export const GroupSelect = ({ onGroupSelect }: Props) => {
             key: String(comment.contactId),
           };
         })}
-        // onChange={(id,name) => {
-        //   if (id) {
-        //     onGroupSelect(id,name);
-        //   }
-        // }}
         onChange={(value) => {
           const selectedGroup = groups.find(
             (group) => String(group.contactId) === value
@@ -62,6 +59,7 @@ export const GroupSelect = ({ onGroupSelect }: Props) => {
           }
         }}
       />
+
       {isGroupLoading ? <Loader color="blue" size={"sm"} /> : null}
     </Flex>
   );

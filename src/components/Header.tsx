@@ -19,9 +19,10 @@ import { GroupSelect } from "./GroupSelect";
 
 type Props = {
   onGroupSelect: (id: string, name: string) => void;
+  dropdownOpened: boolean;
 };
 
-const Header = ({ onGroupSelect }: Props) => {
+const Header = ({ onGroupSelect, dropdownOpened }: Props) => {
   const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
 
   const { colorScheme, setColorScheme } = useMantineColorScheme();
@@ -49,7 +50,10 @@ const Header = ({ onGroupSelect }: Props) => {
         <Flex justify={"space-between"} px={"xl"} align={"center"} h={"100%"}>
           <Logo />
           <Flex gap={"md"}>
-            <GroupSelect onGroupSelect={onGroupSelect} />
+            <GroupSelect
+              onGroupSelect={onGroupSelect}
+              dropdownOpened={dropdownOpened}
+            />
             <HoverCard width={280} shadow="md">
               <HoverCard.Target>
                 <Avatar size={"md"}>{userInfo[0].toUpperCase()}</Avatar>

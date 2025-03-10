@@ -9,20 +9,21 @@ import {
   Table,
   Box,
   Text,
+  Card,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useDisclosure } from "@mantine/hooks";
-import { IconArrowRight } from "@tabler/icons-react";
+import { IconArrowRight, IconSearch } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 import { GroupMembers } from "../types/GroupMembers";
 import Header from "../components/Header";
 import { notifications } from "@mantine/notifications";
 import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
-import { Type1 } from "../types/Type1";
-import { VoucherGeneration } from "../components/VoucherGeneration";
 
 const GroupTable = () => {
   const navigate = useNavigate();
+
+  const [shouldOpenDropdown, setShouldOpenDropdown] = useState<boolean>(false);
   const [RowData, setRowDAta] = useState<GroupMembers[]>([]);
   const [groupMembers, setGroupMembers] = useState<GroupMembers[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(false);
@@ -41,8 +42,6 @@ const GroupTable = () => {
   const type5 = [];
   const type6 = [];
   const type7 = [];
-  // let groupName = "";
-  // let groupId = "";
 
   for (let i = 0; i < RowData.length; i++) {
     if (
@@ -167,6 +166,7 @@ const GroupTable = () => {
         });
       });
   };
+  console.log("group members are", groupMembers);
 
   const handleRowSelection = (groupMember: GroupMembers) => {
     setSelectedRowIds((prev) =>
@@ -236,83 +236,119 @@ const GroupTable = () => {
   };
   console.log("Group Id ", groupId);
   console.log("Group name", groupName);
+
   return (
     <>
-      <Stack h={"100vh"} p={"xl"} gap={"xl"}>
+      <Stack h={"100vh"} gap={"xl"}>
         <Header
           onGroupSelect={(id, name) => {
-            // groupId = id;
-            // groupName = name;
             setGroupId(id);
             setGroupName(name);
             fetchGroupMemberById(id);
+            setShouldOpenDropdown(false);
           }}
+          dropdownOpened={shouldOpenDropdown}
         />
-
-        <Stack gap={"sm"}>
-          <LoadingOverlay visible={isMembersLoading} />
-          <ScrollArea
-            style={{ height: "calc(100vh - 220px", overflow: "auto" }}
-          >
-            <Table
-              style={{
-                borderRadius: "16px",
-              }}
-              horizontalSpacing="xl"
-              verticalSpacing="md"
-              h={"calc(100vh - 220px"}
-              mih={"50vh"}
-              stickyHeader
-              captionSide="bottom"
-              highlightOnHover
-              withColumnBorders
-            >
-              <Table.Thead
-                bg="rgba(243, 243, 243, 1)"
-                style={{
-                  fontWeight: "normal",
-                  fontSize: "14px",
-                }}
-              >
-                <Table.Tr>
-                  <Table.Td>
-                    {getShouldShowSelectAll() ? (
-                      <Checkbox
-                        checked={allSelected}
-                        indeterminate={someSelected}
-                        onChange={toggleSelectAll}
-                      />
-                    ) : null}
-                  </Table.Td>
-                  <Table.Th>First Name</Table.Th>
-                  <Table.Th>Last Name</Table.Th>
-
-                  <Table.Th> Code Formatted</Table.Th>
-
-                  <Table.Th>Open ID</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>{rows}</Table.Tbody>
-            </Table>
-          </ScrollArea>
-        </Stack>
-        <Stack align="flex-end">
-          <Button
+        {groupMembers.length == 0 ? (
+          <Flex
+            bg={"aliceblue"}
+            h={"100vh"}
+            w={"100vw"}
             justify="center"
-            rightSection={<IconArrowRight size={14} />}
-            disabled={selectedRowIds.length === 0}
-            onClick={open}
+            align="center"
           >
-            Generate
-          </Button>
+            <Card w={"30vw"} h={"30vh"} radius="md" shadow="md" withBorder>
+              <Card.Section p={"xl"}>
+                <Stack justify="center" align="center" gap={"xs"}>
+                  <IconSearch
+                    size={80}
+                    color="var(--mantine-color-blue-filled)"
+                  />
+                  <LoadingOverlay visible={isMembersLoading} />
+                  <Text size="lg" fw={"500"}>
+                    No members found
+                  </Text>
+                  <Text c={"gray"} size="sm">
+                    Please select a group to get started!
+                  </Text>
+                  <Button
+                    onClick={() => {
+                      setShouldOpenDropdown(true);
+                    }}
+                    mt="md"
+                  >
+                    Click
+                  </Button>
+                </Stack>
+              </Card.Section>
+            </Card>
+          </Flex>
+        ) : (
+          <>
+            <Stack gap={"sm"} p={"xl"} pb={"md"}>
+              <LoadingOverlay visible={isMembersLoading} />
+              <ScrollArea
+                style={{ height: "calc(100vh - 200px", overflow: "auto" }}
+              >
+                <Table
+                  style={{
+                    borderRadius: "16px",
+                  }}
+                  horizontalSpacing="xl"
+                  verticalSpacing="md"
+                  h={"calc(100vh - 220px"}
+                  mih={"50vh"}
+                  stickyHeader
+                  captionSide="bottom"
+                  highlightOnHover
+                  withColumnBorders
+                >
+                  <Table.Thead
+                    // bg="rgba(243, 243, 243, 1)"
+                    style={{
+                      fontWeight: "normal",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <Table.Tr>
+                      <Table.Td>
+                        {getShouldShowSelectAll() ? (
+                          <Checkbox
+                            checked={allSelected}
+                            indeterminate={someSelected}
+                            onChange={toggleSelectAll}
+                          />
+                        ) : null}
+                      </Table.Td>
+                      <Table.Th>First Name</Table.Th>
+                      <Table.Th>Last Name</Table.Th>
+                      <Table.Th> Code Formatted</Table.Th>
+                      <Table.Th>Open ID</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>{rows}</Table.Tbody>
+                </Table>
+              </ScrollArea>
+            </Stack>
+            <Stack align="flex-end" px={"xl"}>
+              <Button
+                justify="center"
+                rightSection={<IconArrowRight size={14} />}
+                disabled={selectedRowIds.length === 0}
+                onClick={open}
+              >
+                Generate
+              </Button>
 
-          <Checkbox
-            label="Auto-redeem the generated the voucher?"
-            disabled={!hasOpenId}
-            onChange={handleCheckboxChange}
-            checked={isChecked}
-          />
-        </Stack>
+              <Checkbox
+                label="Auto-redeem the generated the voucher?"
+                disabled={!hasOpenId}
+                onChange={handleCheckboxChange}
+                checked={isChecked}
+              />
+            </Stack>
+          </>
+        )}
       </Stack>
       {/* <Modal opened={opened} onClose={close}>
         <Stack>
