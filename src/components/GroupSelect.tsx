@@ -4,7 +4,7 @@ import { Group } from "../types/Group";
 import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
 
 type Props = {
-  onGroupSelect: (id: string) => void;
+  onGroupSelect: (id: string, name: string) => void;
 };
 
 export const GroupSelect = ({ onGroupSelect }: Props) => {
@@ -48,9 +48,17 @@ export const GroupSelect = ({ onGroupSelect }: Props) => {
             key: String(comment.contactId),
           };
         })}
-        onChange={(id) => {
-          if (id) {
-            onGroupSelect(id);
+        // onChange={(id,name) => {
+        //   if (id) {
+        //     onGroupSelect(id,name);
+        //   }
+        // }}
+        onChange={(value) => {
+          const selectedGroup = groups.find(
+            (group) => String(group.contactId) === value
+          );
+          if (selectedGroup) {
+            onGroupSelect(selectedGroup.contactId, selectedGroup.name);
           }
         }}
       />

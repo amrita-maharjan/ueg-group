@@ -18,10 +18,12 @@ import { GroupMembers } from "../types/GroupMembers";
 import Header from "../components/Header";
 import { notifications } from "@mantine/notifications";
 import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
+import { Type1 } from "../types/Type1";
+import { VoucherGeneration } from "../components/VoucherGeneration";
 
 const GroupTable = () => {
   const navigate = useNavigate();
-  const [selectedRowData, setSelectedRowData] = useState<GroupMembers[]>([]);
+  const [RowData, setRowDAta] = useState<GroupMembers[]>([]);
   const [groupMembers, setGroupMembers] = useState<GroupMembers[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
@@ -29,7 +31,102 @@ const GroupTable = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [hasOpenId, setHasOpenId] = useState(false);
   const authHeader = useAuthHeader();
+  const [groupName, setGroupName] = useState("");
+  const [groupId, setGroupId] = useState("");
+  const type0 = [];
+  const type1 = [];
+  const type2 = [];
+  const type3 = [];
+  const type4 = [];
+  const type5 = [];
+  const type6 = [];
+  const type7 = [];
+  // let groupName = "";
+  // let groupId = "";
 
+  for (let i = 0; i < RowData.length; i++) {
+    if (
+      RowData[i].typeForVoucher === 0 &&
+      !RowData[i].activationCodeFormatted
+    ) {
+      type0.push(
+        RowData[i].typeForVoucher,
+        RowData[i].firstName,
+        RowData[i].lastName
+      );
+    } else if (
+      RowData[i].typeForVoucher === 1 &&
+      !RowData[i].activationCodeFormatted
+    ) {
+      type1.push(
+        RowData[i].typeForVoucher,
+        RowData[i].firstName,
+        RowData[i].lastName
+      );
+    } else if (
+      RowData[i].typeForVoucher === 2 &&
+      !RowData[i].activationCodeFormatted
+    ) {
+      type2.push(
+        RowData[i].typeForVoucher,
+        RowData[i].firstName,
+        RowData[i].lastName
+      );
+    } else if (
+      RowData[i].typeForVoucher === 3 &&
+      !RowData[i].activationCodeFormatted
+    ) {
+      type3.push(
+        RowData[i].typeForVoucher,
+        RowData[i].firstName,
+        RowData[i].lastName
+      );
+    } else if (
+      RowData[i].typeForVoucher === 4 &&
+      !RowData[i].activationCodeFormatted
+    ) {
+      type4.push(
+        RowData[i].typeForVoucher,
+        RowData[i].firstName,
+        RowData[i].lastName
+      );
+    } else if (
+      RowData[i].typeForVoucher === 5 &&
+      !RowData[i].activationCodeFormatted
+    ) {
+      type5.push(
+        RowData[i].typeForVoucher,
+        RowData[i].firstName,
+        RowData[i].lastName
+      );
+    } else if (
+      RowData[i].typeForVoucher === 6 &&
+      !RowData[i].activationCodeFormatted
+    ) {
+      type6.push(
+        RowData[i].typeForVoucher,
+        RowData[i].firstName,
+        RowData[i].lastName
+      );
+    } else if (
+      RowData[i].typeForVoucher === 7 &&
+      !RowData[i].activationCodeFormatted
+    ) {
+      type7.push(
+        RowData[i].typeForVoucher,
+        RowData[i].firstName,
+        RowData[i].lastName
+      );
+    }
+  }
+  console.log("Type0", type0);
+  console.log("Type1", type1);
+  console.log("Type2", type2);
+  console.log("Type3", type3);
+  console.log("Type4", type4);
+  console.log("Type5", type5);
+  console.log("Type6", type6);
+  console.log("Type7", type7);
   useEffect(() => {
     const username = localStorage.getItem("uName");
     const password = localStorage.getItem("password");
@@ -43,8 +140,9 @@ const GroupTable = () => {
 
   useEffect(() => {
     setSelectedRowIds([]);
-    setSelectedRowData([]);
+    setRowDAta([]);
   }, [groupMembers]);
+
   const fetchGroupMemberById = (contactId: string) => {
     setIsMembersLoading(true);
     fetch(
@@ -76,7 +174,7 @@ const GroupTable = () => {
         ? prev.filter((id) => id !== groupMember.id)
         : [...prev, groupMember.id]
     );
-    setSelectedRowData((prev) =>
+    setRowDAta((prev) =>
       prev.some((row) => row.id === groupMember.id)
         ? prev.filter((row) => row.id !== groupMember.id)
         : [...prev, groupMember]
@@ -103,11 +201,11 @@ const GroupTable = () => {
   const toggleSelectAll = () => {
     if (selectedRowIds.length === groupMembers.length) {
       setSelectedRowIds([]);
-      setSelectedRowData([]);
+      setRowDAta([]);
     } else {
       const allSelectedRows = groupMembers.map((row) => row.id);
       setSelectedRowIds(allSelectedRows);
-      setSelectedRowData(groupMembers);
+      setRowDAta(groupMembers);
     }
   };
   const rows = groupMembers.map((members) => (
@@ -136,10 +234,21 @@ const GroupTable = () => {
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsChecked(event.target.checked);
   };
+  console.log("Group Id ", groupId);
+  console.log("Group name", groupName);
   return (
     <>
       <Stack h={"100vh"} p={"xl"} gap={"xl"}>
-        <Header onGroupSelect={(id) => fetchGroupMemberById(id)} />
+        <Header
+          onGroupSelect={(id, name) => {
+            // groupId = id;
+            // groupName = name;
+            setGroupId(id);
+            setGroupName(name);
+            fetchGroupMemberById(id);
+          }}
+        />
+
         <Stack gap={"sm"}>
           <LoadingOverlay visible={isMembersLoading} />
           <ScrollArea
@@ -196,6 +305,7 @@ const GroupTable = () => {
           >
             Generate
           </Button>
+
           <Checkbox
             label="Auto-redeem the generated the voucher?"
             disabled={!hasOpenId}
@@ -227,12 +337,20 @@ const GroupTable = () => {
         onClose={close}
         centered
       >
-        {selectedRowData.length > 0 ? (
+        {RowData.length > 0 ? (
           <Box>
-            {selectedRowData.map((row) => (
+            {RowData.map((row) => (
               <Box key={row.id} mb="sm">
                 {!row.activationCodeFormatted ? (
                   <>
+                    <p>
+                      <strong>GroupId:</strong>
+                      {groupId}
+                    </p>
+                    <p>
+                      <strong>GroupName:</strong>
+                      {groupName}
+                    </p>
                     <p>
                       <strong>ID:</strong> {row.id}
                     </p>

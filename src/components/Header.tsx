@@ -18,7 +18,7 @@ import { Logo } from "./Logo";
 import { GroupSelect } from "./GroupSelect";
 
 type Props = {
-  onGroupSelect: (id: string) => void;
+  onGroupSelect: (id: string, name: string) => void;
 };
 
 const Header = ({ onGroupSelect }: Props) => {
