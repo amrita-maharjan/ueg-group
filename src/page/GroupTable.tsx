@@ -236,16 +236,30 @@ const GroupTable = () => {
     if (eligibleSelectedGroupMembers.length === 0) {
       return;
     }
-    const payloadForVoucherGeneration = createPayloadForVoucherGeneration(
-      groupName,
-      eligibleSelectedGroupMembers
-    );
-    const payloadForAutoRedeem = createPayloadForAutoRedeem(
-      groupName,
-      eligibleSelectedGroupMembers
-    );
-    generateVouchers(groupId, payloadForVoucherGeneration);
-    autoRedeemVouchers(groupId, payloadForAutoRedeem);
+    if (isChecked) {
+      const eligibleForAutoRedeem = selectedGroupMembers.filter(
+        (selectedGroupMember) => selectedGroupMember.openID
+      );
+      const notEligibleForAutoRedeem = selectedGroupMembers.filter(
+        (selectedGroupMember) => !selectedGroupMember.openID
+      );
+      const payloadForAutoRedeem = createPayloadForAutoRedeem(
+        groupName,
+        eligibleForAutoRedeem
+      );
+      autoRedeemVouchers(groupId, payloadForAutoRedeem);
+      const payloadForVoucherGeneration = createPayloadForVoucherGeneration(
+        groupName,
+        notEligibleForAutoRedeem
+      );
+      generateVouchers(groupId, payloadForVoucherGeneration);
+    } else {
+      const payloadForVoucherGeneration = createPayloadForVoucherGeneration(
+        groupName,
+        selectedGroupMembers
+      );
+      generateVouchers(groupId, payloadForVoucherGeneration);
+    }
   };
 
   return (
@@ -354,7 +368,7 @@ const GroupTable = () => {
               </Button>
               <Checkbox
                 label="Auto-redeem the generated the voucher?"
-                // disabled={!hasOpenId}
+                disabled={!hasOpenId}
                 onChange={handleCheckboxChange}
                 checked={isChecked}
               />
