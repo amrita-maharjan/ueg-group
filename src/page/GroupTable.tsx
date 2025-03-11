@@ -1,24 +1,28 @@
 import {
   Button,
+  Card,
   Checkbox,
   Flex,
   LoadingOverlay,
-  Modal,
   ScrollArea,
   Stack,
   Table,
   Text,
-  Card,
 } from "@mantine/core";
-import { useEffect, useState } from "react";
 import { useDisclosure } from "@mantine/hooks";
-import { IconArrowRight, IconSearch } from "@tabler/icons-react";
-import { useNavigate } from "react-router-dom";
-import { GroupMembers } from "../types/GroupMembers";
-import Header from "../components/Header";
 import { notifications } from "@mantine/notifications";
+import { IconArrowRight, IconSearch } from "@tabler/icons-react";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ConfirmationModal } from "../components/ConfirmationModal";
+import Header from "../components/Header";
 import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
-import { createPayload } from "../utils/create-payload";
+import { GroupMemberPayload } from "../types/GroupMemberPayload";
+import { GroupMembers } from "../types/GroupMembers";
+import {
+  createPayloadForAutoRedeem,
+  createPayloadForVoucherGeneration,
+} from "../utils/create-payload";
 
 const GroupTable = () => {
   const navigate = useNavigate();
@@ -29,6 +33,8 @@ const GroupTable = () => {
   >([]);
   const [groupMembers, setGroupMembers] = useState<GroupMembers[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(false);
+  const [isGeneratingVouchers, setIsGeneratingVouchers] = useState(false);
+  const [isAutoRedeemingVouchers, setIsAutoRedeemingVouchers] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [isChecked, setIsChecked] = useState(false);
@@ -54,7 +60,7 @@ const GroupTable = () => {
     setSelectedGroupMembers([]);
   }, [groupId]);
 
-  const fetchGroupMemberById = (contactId: string) => {
+  const fetchGroupMemberById = useCallback((contactId: string) => {
     setIsMembersLoading(true);
     fetch(
       `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups/${contactId}`,
@@ -77,7 +83,77 @@ const GroupTable = () => {
           message: "Error occurred!",
         });
       });
-  };
+  }, []);
+
+  const generateVouchers = useCallback(
+    (groupId: string, payload: GroupMemberPayload) => {
+      setIsGeneratingVouchers(true);
+      fetch(
+        `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups/generate-vouchers/${groupId}`,
+        {
+          method: "POST",
+          body: JSON.stringify(payload),
+          headers: {
+            Authorization: authHeader,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then(() => {
+          setIsGeneratingVouchers(false);
+          notifications.show({
+            color: "green",
+            title: "Voucher generation triggered",
+            message: "Please check back in a few minutes",
+          });
+        })
+        .catch(() => {
+          setIsGeneratingVouchers(false);
+          notifications.show({
+            color: "red",
+            title: "Failed to generate vouchers",
+            message: "Error occurred!",
+          });
+        });
+    },
+    []
+  );
+
+  const autoRedeemVouchers = useCallback(
+    (groupId: string, payload: GroupMemberPayload) => {
+      setIsAutoRedeemingVouchers(true);
+      fetch(
+        `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups/generate-vouchers/${groupId}/auto-redeem`,
+        {
+          method: "POST",
+          body: JSON.stringify(payload),
+          headers: {
+            Authorization: authHeader,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then(() => {
+          setIsAutoRedeemingVouchers(false);
+          notifications.show({
+            color: "green",
+            title: "Voucher auto-redeem triggered",
+            message: "Please check back in a few minutes",
+          });
+        })
+        .catch(() => {
+          setIsAutoRedeemingVouchers(false);
+          notifications.show({
+            color: "red",
+            title: "Failed to auto-redeem vouchers",
+            message: "Error occurred!",
+          });
+        });
+    },
+    []
+  );
 
   const handleRowSelection = (groupMember: GroupMembers) => {
     setSelectedRowIds((prev) =>
@@ -119,6 +195,7 @@ const GroupTable = () => {
       setSelectedGroupMembers(groupMembers);
     }
   };
+
   const rows = groupMembers.map((members) => (
     <Table.Tr key={members.id}>
       <Table.Td>
@@ -145,6 +222,30 @@ const GroupTable = () => {
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsChecked(event.target.checked);
+  };
+
+  const handleVoucherCreation = () => {
+    const eligibleSelectedGroupMembers = selectedGroupMembers.filter(
+      (selectedGroupMember) => {
+        return (
+          !selectedGroupMember.activationCodeFormatted &&
+          selectedGroupMember.typeForVoucher !== 0
+        );
+      }
+    );
+    if (eligibleSelectedGroupMembers.length === 0) {
+      return;
+    }
+    const payloadForVoucherGeneration = createPayloadForVoucherGeneration(
+      groupName,
+      eligibleSelectedGroupMembers
+    );
+    const payloadForAutoRedeem = createPayloadForAutoRedeem(
+      groupName,
+      eligibleSelectedGroupMembers
+    );
+    generateVouchers(groupId, payloadForVoucherGeneration);
+    autoRedeemVouchers(groupId, payloadForAutoRedeem);
   };
 
   return (
@@ -245,13 +346,15 @@ const GroupTable = () => {
                 justify="center"
                 rightSection={<IconArrowRight size={14} />}
                 disabled={selectedRowIds.length === 0}
-                onClick={open}
+                onClick={() => {
+                  open();
+                }}
               >
                 Generate
               </Button>
               <Checkbox
                 label="Auto-redeem the generated the voucher?"
-                disabled={!hasOpenId}
+                // disabled={!hasOpenId}
                 onChange={handleCheckboxChange}
                 checked={isChecked}
               />
@@ -259,37 +362,16 @@ const GroupTable = () => {
           </>
         )}
       </Stack>
-      <Modal opened={opened} onClose={close}>
-        <Stack>
-          <Text fw={"500"}>Confirm Voucher Generation</Text>
-          <Text>
-            Are you sure you want to generate voucher for the selected
-            participants?
-          </Text>
-          <Flex gap={"lg"} justify={"flex-end"}>
-            <Button variant="default" onClick={close}>
-              Cancel
-            </Button>
-            <Button
-              variant="filled"
-              onClick={() => {
-                close();
-                const eligibleSelectedGroupMembers =
-                  selectedGroupMembers.filter((selectedGroupMember) => {
-                    return !selectedGroupMember.activationCodeFormatted;
-                  });
-                const payload = createPayload(
-                  groupName,
-                  eligibleSelectedGroupMembers
-                );
-                console.log("print", payload);
-              }}
-            >
-              Ok
-            </Button>
-          </Flex>
-        </Stack>
-      </Modal>
+      <ConfirmationModal
+        opened={opened}
+        close={() => {
+          close();
+        }}
+        onOkayClick={() => {
+          close();
+          handleVoucherCreation();
+        }}
+      />
     </>
   );
 };

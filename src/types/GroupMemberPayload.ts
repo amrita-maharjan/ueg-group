@@ -9,6 +9,6 @@ export interface Voucher {
   type: number;
   role: string;
   groupName: string;
-  openID: string;
+  openID?: string;
   contactId: string;
 }
