@@ -56,7 +56,7 @@ const GroupTable = () => {
 
   useEffect(() => {
     handleAutoRedeem();
-  }, [groupId]);
+  }, [groupMembers]);
 
   useEffect(() => {
     setSelectedRowIds([]);
@@ -220,6 +220,7 @@ const GroupTable = () => {
 
   const handleAutoRedeem = () => {
     const hasOpenID = groupMembers.some((member) => member.openID);
+    console.log("the open id are", hasOpenId);
     setHasOpenId(hasOpenID);
   };
 
