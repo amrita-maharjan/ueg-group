@@ -1,5 +1,5 @@
 import { Flex, Button, Select, Loader } from "@mantine/core";
-import React from "react";
+import React, { useState } from "react";
 import { Group } from "../types/Group";
 import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
 
@@ -11,7 +11,7 @@ type Props = {
 export const GroupSelect = ({ onGroupSelect, dropdownOpened }: Props) => {
   const [isGroupLoading, setIsGroupLoading] = React.useState<boolean>(false);
   const [groups, setGroups] = React.useState<Group[]>([]);
-
+  const [isDisabled, setIsDisabled] = useState(false);
   const authHeader = useAuthHeader();
 
   React.useEffect(() => {
@@ -42,6 +42,7 @@ export const GroupSelect = ({ onGroupSelect, dropdownOpened }: Props) => {
         searchable
         w={"20vw"}
         bg={"white"}
+        disabled={isDisabled}
         placeholder="Select a group"
         // dropdownOpened={dropdownOpened}
         data={sortedData.map((comment) => {
@@ -57,6 +58,12 @@ export const GroupSelect = ({ onGroupSelect, dropdownOpened }: Props) => {
           );
           if (selectedGroup) {
             onGroupSelect(selectedGroup.contactId, selectedGroup.name);
+            setIsGroupLoading(true);
+            setIsDisabled(true);
+            setTimeout(() => {
+              setIsDisabled(false);
+              setIsGroupLoading(false);
+            }, 60000);
           }
         }}
       />
