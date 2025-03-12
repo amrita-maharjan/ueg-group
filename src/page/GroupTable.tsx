@@ -42,6 +42,9 @@ const GroupTable = () => {
   const authHeader = useAuthHeader();
   const [groupName, setGroupName] = useState("");
   const [groupId, setGroupId] = useState("");
+  const [loadingGroups, setLoadingGroups] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   useEffect(() => {
     const username = localStorage.getItem("uName");
@@ -225,6 +228,10 @@ const GroupTable = () => {
   };
 
   const handleVoucherCreation = () => {
+    setLoadingGroups((prev) => ({ ...prev, [groupId]: true }));
+    setTimeout(() => {
+      setLoadingGroups((prev) => ({ ...prev, [groupId]: false }));
+    }, 60000);
     const eligibleSelectedGroupMembers = selectedGroupMembers.filter(
       (selectedGroupMember) => {
         return (
@@ -273,6 +280,7 @@ const GroupTable = () => {
             setShouldOpenDropdown(false);
           }}
           dropdownOpened={shouldOpenDropdown}
+          loadingGroups={loadingGroups}
         />
         {groupMembers.length == 0 ? (
           <Flex
@@ -359,7 +367,7 @@ const GroupTable = () => {
               <Button
                 justify="center"
                 rightSection={<IconArrowRight size={14} />}
-                disabled={selectedRowIds.length === 0}
+                disabled={loadingGroups[groupId] || selectedRowIds.length === 0}
                 onClick={() => {
                   open();
                 }}

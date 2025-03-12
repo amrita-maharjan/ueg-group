@@ -20,9 +20,12 @@ import { GroupSelect } from "./GroupSelect";
 type Props = {
   onGroupSelect: (id: string, name: string) => void;
   dropdownOpened: boolean;
+  loadingGroups: {
+    [key: string]: boolean;
+  };
 };
 
-const Header = ({ onGroupSelect, dropdownOpened }: Props) => {
+const Header = ({ onGroupSelect, dropdownOpened, loadingGroups }: Props) => {
   const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
 
   const { colorScheme, setColorScheme } = useMantineColorScheme();
@@ -53,6 +56,7 @@ const Header = ({ onGroupSelect, dropdownOpened }: Props) => {
             <GroupSelect
               onGroupSelect={onGroupSelect}
               dropdownOpened={dropdownOpened}
+              loadingGroups={loadingGroups}
             />
             <HoverCard width={280} shadow="md">
               <HoverCard.Target>
