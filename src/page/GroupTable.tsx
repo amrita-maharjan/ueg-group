@@ -55,8 +55,9 @@ const GroupTable = () => {
   }, []);
 
   useEffect(() => {
-    handleAutoRedeem();
-  }, [groupId]);
+    const hasOpenID = groupMembers.some((member) => member.openID);
+    setHasOpenId(hasOpenID);
+  }, [groupMembers]);
 
   useEffect(() => {
     setSelectedRowIds([]);
@@ -217,11 +218,6 @@ const GroupTable = () => {
       <Table.Td>{members.openID}</Table.Td>
     </Table.Tr>
   ));
-
-  const handleAutoRedeem = () => {
-    const hasOpenID = groupMembers.some((member) => member.openID);
-    setHasOpenId(hasOpenID);
-  };
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsChecked(event.target.checked);
