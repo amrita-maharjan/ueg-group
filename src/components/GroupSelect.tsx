@@ -1,21 +1,16 @@
-import { Flex, Select, Loader, SelectProps } from "@mantine/core";
+import { Flex, Loader, Select, SelectProps } from "@mantine/core";
 import React from "react";
-import { Group as Groups } from "../types/Group";
 import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
+import { Group as Groups } from "../types/Group";
 
 type Props = {
   onGroupSelect: (id: string, name: string) => void;
-  dropdownOpened: boolean;
   loadingGroups: {
     [key: string]: boolean;
   };
 };
 
-export const GroupSelect = ({
-  onGroupSelect,
-  dropdownOpened,
-  loadingGroups,
-}: Props) => {
+export const GroupSelect = ({ onGroupSelect, loadingGroups }: Props) => {
   const [isGroupLoading, setIsGroupLoading] = React.useState<boolean>(false);
   const [groups, setGroups] = React.useState<Groups[]>([]);
   const authHeader = useAuthHeader();
@@ -51,10 +46,7 @@ export const GroupSelect = ({
     }
   };
 
-  const renderSelectOption: SelectProps["renderOption"] = ({
-    option,
-    checked,
-  }) => {
+  const renderSelectOption: SelectProps["renderOption"] = ({ option }) => {
     const isLoading = loadingGroups[option.value];
 
     return (

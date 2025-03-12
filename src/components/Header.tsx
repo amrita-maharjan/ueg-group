@@ -14,8 +14,8 @@ import { IconMoonStars, IconSun } from "@tabler/icons-react";
 
 import { useComputedColorScheme, useMantineColorScheme } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
-import { Logo } from "./Logo";
 import { GroupSelect } from "./GroupSelect";
+import { Logo } from "./Logo";
 
 type Props = {
   onGroupSelect: (id: string, name: string) => void;
@@ -25,10 +25,10 @@ type Props = {
   };
 };
 
-const Header = ({ onGroupSelect, dropdownOpened, loadingGroups }: Props) => {
-  const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
+const Header = ({ onGroupSelect, loadingGroups }: Props) => {
+  const [desktopOpened] = useDisclosure(true);
 
-  const { colorScheme, setColorScheme } = useMantineColorScheme();
+  const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("light");
   const toggleColorScheme = () => {
     setColorScheme(computedColorScheme === "dark" ? "light" : "dark");
@@ -55,7 +55,6 @@ const Header = ({ onGroupSelect, dropdownOpened, loadingGroups }: Props) => {
           <Flex gap={"md"}>
             <GroupSelect
               onGroupSelect={onGroupSelect}
-              dropdownOpened={dropdownOpened}
               loadingGroups={loadingGroups}
             />
             <HoverCard width={280} shadow="md">

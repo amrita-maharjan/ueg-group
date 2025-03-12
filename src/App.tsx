@@ -1,9 +1,8 @@
 import "@mantine/core/styles.css";
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Login } from "./page/Login";
-import { useEffect } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import GroupTable from "./page/GroupTable";
+import { Login } from "./page/Login";
 
 export default function App() {
   return (
