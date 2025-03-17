@@ -6,4 +6,6 @@ export type GroupMembers = {
   typeForVoucher: number;
   openID: string;
   primaryEmail: string;
+  paymentStatus: string;
+  remarks: string[];
 };

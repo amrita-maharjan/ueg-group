@@ -45,6 +45,7 @@ const GroupTable = () => {
   const authHeader = useAuthHeader();
   const [groupName, setGroupName] = useState("");
   const [groupId, setGroupId] = useState("");
+
   const [loadingGroups, setLoadingGroups] = useState<{
     [key: string]: boolean;
   }>({});
@@ -205,19 +206,23 @@ const GroupTable = () => {
   const rows = groupMembers.map((members) => (
     <Table.Tr key={members.id}>
       <Table.Td>
-        {!members.activationCodeFormatted && (
-          <Checkbox
-            key={members.id}
-            checked={selectedRowIds.includes(members.id)}
-            onChange={() => handleRowSelection(members)}
-          />
-        )}
+        {!members.activationCodeFormatted &&
+          members.typeForVoucher != null &&
+          members.paymentStatus != "CANCELED" &&
+          members.paymentStatus != "CANCELED_GROUP_INVENTORY" && (
+            <Checkbox
+              key={members.id}
+              checked={selectedRowIds.includes(members.id)}
+              onChange={() => handleRowSelection(members)}
+            />
+          )}
       </Table.Td>
       <Table.Td>{members.firstName}</Table.Td>
       <Table.Td>{members.lastName}</Table.Td>
 
       <Table.Td>{members.activationCodeFormatted}</Table.Td>
       <Table.Td>{members.openID}</Table.Td>
+      <Table.Td>{members.remarks?.join(", ")}</Table.Td>
     </Table.Tr>
   ));
 
@@ -248,13 +253,14 @@ const GroupTable = () => {
       (selectedGroupMember) => {
         return (
           !selectedGroupMember.activationCodeFormatted &&
-          selectedGroupMember.typeForVoucher !== 0
+          selectedGroupMember.typeForVoucher !== null
         );
       }
     );
     if (eligibleSelectedGroupMembers.length === 0) {
       return;
     }
+
     if (isChecked) {
       const eligibleForAutoRedeem = selectedGroupMembers.filter(
         (selectedGroupMember) => selectedGroupMember.openID
@@ -280,10 +286,10 @@ const GroupTable = () => {
       generateVouchers(groupId, payloadForVoucherGeneration);
     }
   };
-
+  console.log("the eligible members are", selectedGroupMembers);
   return (
     <>
-      <Stack h={"100vh"} gap={"xl"}>
+      <Stack h={"100vh"} gap={"xl"} bg={"aliceblue"}>
         <Header
           onGroupSelect={(id, name) => {
             setGroupId(id);
@@ -333,18 +339,24 @@ const GroupTable = () => {
             <Stack gap={"sm"} p={"xl"} pb={"md"}>
               <LoadingOverlay visible={isMembersLoading} />
               <ScrollArea
-                style={{ height: "calc(100vh - 200px", overflow: "auto" }}
+                style={{
+                  height: "calc(100vh - 200px",
+                  overflow: "auto",
+                }}
               >
                 <Table
                   style={{
                     borderRadius: "16px",
                     overflow: "auto",
-                    maxHeight: "50px",
-                    minHeight: "20px",
                   }}
+                  bg={"white"}
                   h={"calc(100vh - 220px"}
-                  m={"20px"}
+                  w={"90%"}
+                  m={"60px"}
+                  mah={"50px"}
+                  mih={"20%"}
                   stickyHeader
+                  stickyHeaderOffset={60}
                   captionSide="bottom"
                   highlightOnHover
                 >
@@ -369,6 +381,7 @@ const GroupTable = () => {
                       <Table.Th>Last Name</Table.Th>
                       <Table.Th> Code Formatted</Table.Th>
                       <Table.Th>Open ID</Table.Th>
+                      <Table.Th>Remarks</Table.Th>
                     </Table.Tr>
                   </Table.Thead>
                   <Table.Tbody>{rows}</Table.Tbody>
