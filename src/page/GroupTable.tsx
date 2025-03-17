@@ -343,7 +343,7 @@ const GroupTable = () => {
                     minHeight: "20px",
                   }}
                   h={"calc(100vh - 220px"}
-                  m={"xl"}
+                  m={"20px"}
                   stickyHeader
                   captionSide="bottom"
                   highlightOnHover
