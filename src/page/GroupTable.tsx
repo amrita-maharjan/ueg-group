@@ -338,20 +338,21 @@ const GroupTable = () => {
                 <Table
                   style={{
                     borderRadius: "16px",
+                    overflow: "auto",
+                    maxHeight: "50px",
+                    minHeight: "20px",
                   }}
-                  horizontalSpacing="xl"
-                  verticalSpacing="md"
                   h={"calc(100vh - 220px"}
-                  mih={"50vh"}
+                  m={"xl"}
                   stickyHeader
                   captionSide="bottom"
                   highlightOnHover
-                  withColumnBorders
                 >
                   <Table.Thead
                     style={{
                       fontWeight: "normal",
                       fontSize: "14px",
+                      background: "lightgrey",
                     }}
                   >
                     <Table.Tr>

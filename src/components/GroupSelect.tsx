@@ -3,6 +3,7 @@ import React from "react";
 import { Group, Group as Groups } from "../types/Group";
 
 import { IconCheck } from "@tabler/icons-react";
+import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
 
 type Props = {
   onGroupSelect: (id: string, name: string) => void;
@@ -15,7 +16,7 @@ type Props = {
 export const GroupSelect = ({ onGroupSelect, loadingGroups }: Props) => {
   const [isGroupLoading, setIsGroupLoading] = React.useState<boolean>(false);
   const [groups, setGroups] = React.useState<Groups[]>([]);
-
+  const authHeader = useAuthHeader();
   const dummyGroup: Group[] = [
     {
       contactId: "e69a0a2b-272c-4045-9c71-14a56763acf6",
@@ -37,22 +38,22 @@ export const GroupSelect = ({ onGroupSelect, loadingGroups }: Props) => {
 
   React.useEffect(() => {
     setIsGroupLoading(true);
-    setGroups(dummyGroup);
-    // fetch(
-    //   `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups`,
-    //   {
-    //     method: "GET",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       Authorization: authHeader,
-    //     },
-    //   }
-    // )
-    //   .then((res) => res.json())
-    //   .then((data) => {
-    //     setGroups(data);
-    //     setIsGroupLoading(false);
-    //   });
+    // setGroups(dummyGroup);
+    fetch(
+      `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setGroups(data);
+        setIsGroupLoading(false);
+      });
   }, []);
 
   const handleSelect = (value: string | null) => {
