@@ -26,9 +26,9 @@ type Props = {
 };
 
 const Header = ({ onGroupSelect, dropdownOpened, loadingGroups }: Props) => {
-  const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
+  const [desktopOpened] = useDisclosure(true);
 
-  const { colorScheme, setColorScheme } = useMantineColorScheme();
+  const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("light");
   const toggleColorScheme = () => {
     setColorScheme(computedColorScheme === "dark" ? "light" : "dark");

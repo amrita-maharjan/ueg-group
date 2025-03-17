@@ -33,7 +33,10 @@ const GroupTable = () => {
   >([]);
   const [groupMembers, setGroupMembers] = useState<GroupMembers[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(false);
+  //@ts-ignore
   const [isGeneratingVouchers, setIsGeneratingVouchers] = useState(false);
+  //@ts-ignoreyarn build
+
   const [isAutoRedeemingVouchers, setIsAutoRedeemingVouchers] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);

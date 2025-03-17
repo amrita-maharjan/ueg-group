@@ -1,7 +1,7 @@
 import { Flex, Select, Loader, SelectProps } from "@mantine/core";
 import React from "react";
-import { Group as Groups } from "../types/Group";
-import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
+import { Group, Group as Groups } from "../types/Group";
+
 import { IconCheck } from "@tabler/icons-react";
 
 type Props = {
@@ -12,33 +12,47 @@ type Props = {
   };
 };
 
-export const GroupSelect = ({
-  onGroupSelect,
-  dropdownOpened,
-  loadingGroups,
-}: Props) => {
+export const GroupSelect = ({ onGroupSelect, loadingGroups }: Props) => {
   const [isGroupLoading, setIsGroupLoading] = React.useState<boolean>(false);
   const [groups, setGroups] = React.useState<Groups[]>([]);
-  const authHeader = useAuthHeader();
+
+  const dummyGroup: Group[] = [
+    {
+      contactId: "e69a0a2b-272c-4045-9c71-14a56763acf6",
+      name: "Group1",
+    },
+    {
+      contactId: "255fad40-d73b-4ee9-a591-9c9e490130d3",
+      name: "Group2",
+    },
+    {
+      contactId: "5f7e7559-adda-4cc0-84ab-4c8c32090fde",
+      name: "Group3",
+    },
+    {
+      contactId: "51da29d0-bea4-46eb-a094-2535b6e7bf0a",
+      name: "Group4",
+    },
+  ];
 
   React.useEffect(() => {
     setIsGroupLoading(true);
-
-    fetch(
-      `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: authHeader,
-        },
-      }
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setGroups(data);
-        setIsGroupLoading(false);
-      });
+    setGroups(dummyGroup);
+    // fetch(
+    //   `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups`,
+    //   {
+    //     method: "GET",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       Authorization: authHeader,
+    //     },
+    //   }
+    // )
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     setGroups(data);
+    //     setIsGroupLoading(false);
+    //   });
   }, []);
 
   const handleSelect = (value: string | null) => {
