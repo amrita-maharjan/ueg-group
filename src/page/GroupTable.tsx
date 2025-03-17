@@ -170,10 +170,17 @@ const GroupTable = () => {
     );
     setSelectedGroupMembers((prev) =>
       prev.some((row) => row.id === groupMember.id)
-        ? prev.filter((row) => row.id !== groupMember.id)
+        ? prev.filter(
+            (row) =>
+              row.id !== groupMember.id &&
+              row.activationCodeFormatted !== null &&
+              row.paymentStatus !== "CANCELED" &&
+              row.paymentStatus !== "CANCELED_GROUP_INVENTORY"
+          )
         : [...prev, groupMember]
     );
   };
+  console.log("the selected group members are", selectedGroupMembers);
 
   const allSelected =
     selectedRowIds.length === groupMembers.length && groupMembers.length > 0;
@@ -184,7 +191,12 @@ const GroupTable = () => {
   const getShouldShowSelectAll = () => {
     let shouldShowSelectAll = false;
     for (let i = 0; i < groupMembers.length; i++) {
-      if (!groupMembers[i].activationCodeFormatted) {
+      if (
+        !groupMembers[i].activationCodeFormatted &&
+        groupMembers[i].paymentStatus !== "CANCELED" &&
+        groupMembers[i].paymentStatus !== "CANCELED_GROUP_INVENTORY" &&
+        groupMembers[i].typeForVoucher !== null
+      ) {
         shouldShowSelectAll = true;
         break;
       }
@@ -197,9 +209,14 @@ const GroupTable = () => {
       setSelectedRowIds([]);
       setSelectedGroupMembers([]);
     } else {
-      const allSelectedRows = groupMembers.map((row) => row.id);
-      setSelectedRowIds(allSelectedRows);
-      setSelectedGroupMembers(groupMembers);
+      const allSelectableRows = groupMembers
+        .filter((row) => !row.activationCodeFormatted)
+        .map((row) => row.id);
+
+      setSelectedRowIds(allSelectableRows);
+      setSelectedGroupMembers(
+        groupMembers.filter((row) => allSelectableRows.includes(row.id))
+      );
     }
   };
 
