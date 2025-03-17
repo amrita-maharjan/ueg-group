@@ -227,12 +227,20 @@ const GroupTable = () => {
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsChecked(event.target.checked);
   };
-
-  const handleVoucherCreation = () => {
-    setLoadingGroups((prev) => ({ ...prev, [groupId]: true }));
+  const handleLoading = () => {
+    console.log("Before updating:", loadingGroups);
+    setLoadingGroups((prev) => {
+      const updatedState = { ...prev, [groupId]: true };
+      console.log("Updated loadingGroups:", updatedState);
+      return updatedState;
+    });
+    console.log("After setting loading true:", loadingGroups);
     setTimeout(() => {
       setLoadingGroups((prev) => ({ ...prev, [groupId]: false }));
     }, 60000);
+  };
+
+  const handleVoucherCreation = () => {
     const eligibleSelectedGroupMembers = selectedGroupMembers.filter(
       (selectedGroupMember) => {
         return (
@@ -338,7 +346,6 @@ const GroupTable = () => {
                   withColumnBorders
                 >
                   <Table.Thead
-                    // bg="rgba(243, 243, 243, 1)"
                     style={{
                       fontWeight: "normal",
                       fontSize: "14px",
@@ -393,6 +400,7 @@ const GroupTable = () => {
         onOkayClick={() => {
           close();
           handleVoucherCreation();
+          handleLoading();
         }}
       />
     </>

@@ -2,6 +2,7 @@ import { Flex, Select, Loader, SelectProps } from "@mantine/core";
 import React from "react";
 import { Group as Groups } from "../types/Group";
 import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
+import { IconCheck } from "@tabler/icons-react";
 
 type Props = {
   onGroupSelect: (id: string, name: string) => void;
@@ -55,10 +56,13 @@ export const GroupSelect = ({
     option,
     checked,
   }) => {
-    const isLoading = loadingGroups[option.value];
+    const isLoading = loadingGroups?.[option.value];
 
     return (
-      <Flex flex="1" gap="xs" justify={"space-between"}>
+      <Flex gap="xl" justify={"space-between"}>
+        {checked && (
+          <IconCheck style={{ marginInlineStart: "auto" }} {...GroupSelect} />
+        )}
         {option.label}
         {isLoading && <Loader size={15} />}
       </Flex>
