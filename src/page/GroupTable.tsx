@@ -12,7 +12,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconArrowRight, IconSearch } from "@tabler/icons-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ConfirmationModal } from "../components/ConfirmationModal";
 import Header from "../components/Header";
@@ -45,7 +45,8 @@ const GroupTable = () => {
   const authHeader = useAuthHeader();
   const [groupName, setGroupName] = useState("");
   const [groupId, setGroupId] = useState("");
-
+  const [MembersStatus, setMemberStatus] = useState({});
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [loadingGroups, setLoadingGroups] = useState<{
     [key: string]: boolean;
   }>({});
@@ -168,6 +169,13 @@ const GroupTable = () => {
         ? prev.filter((id) => id !== groupMember.id)
         : [...prev, groupMember.id]
     );
+
+    setSelectedGroupIds((prev) =>
+      prev.includes(groupId)
+        ? prev.filter((id) => id !== groupId)
+        : [...prev, groupId]
+    );
+
     setSelectedGroupMembers((prev) =>
       prev.some((row) => row.id === groupMember.id)
         ? prev.filter(
@@ -180,7 +188,6 @@ const GroupTable = () => {
         : [...prev, groupMember]
     );
   };
-  console.log("the selected group members are", selectedGroupMembers);
 
   const allSelected =
     selectedRowIds.length === groupMembers.length && groupMembers.length > 0;
@@ -223,16 +230,18 @@ const GroupTable = () => {
   const rows = groupMembers.map((members) => (
     <Table.Tr key={members.id}>
       <Table.Td>
-        {!members.activationCodeFormatted &&
+        {
+          // !members.activationCodeFormatted &&
           members.typeForVoucher != null &&
-          members.paymentStatus != "CANCELED" &&
-          members.paymentStatus != "CANCELED_GROUP_INVENTORY" && (
-            <Checkbox
-              key={members.id}
-              checked={selectedRowIds.includes(members.id)}
-              onChange={() => handleRowSelection(members)}
-            />
-          )}
+            members.paymentStatus != "CANCELED" &&
+            members.paymentStatus != "CANCELED_GROUP_INVENTORY" && (
+              <Checkbox
+                key={members.id}
+                checked={selectedRowIds.includes(members.id)}
+                onChange={() => handleRowSelection(members)}
+              />
+            )
+        }
       </Table.Td>
       <Table.Td>{members.firstName}</Table.Td>
       <Table.Td>{members.lastName}</Table.Td>
@@ -252,28 +261,60 @@ const GroupTable = () => {
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsChecked(event.target.checked);
   };
+
   const handleLoading = () => {
-    console.log("Before updating:", loadingGroups);
     setLoadingGroups((prev) => {
       const updatedState = { ...prev, [groupId]: true };
-      console.log("Updated loadingGroups:", updatedState);
       return updatedState;
     });
-    console.log("After setting loading true:", loadingGroups);
+
     setTimeout(() => {
       setLoadingGroups((prev) => ({ ...prev, [groupId]: false }));
     }, 60000);
   };
 
+  const intervalsRef = useRef<{ [key: string]: NodeJS.Timeout | null }>({});
+
+  const fetchStatus = useCallback(
+    (groupId: string) => {
+      fetch(
+        `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups/generate-vouchers/status/${groupId}`,
+        {
+          headers: {
+            Authorization: authHeader,
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then((json) => {
+          setMemberStatus(json);
+          if (
+            json.status === "NOT_FOUND" ||
+            json.status === "FAILED" ||
+            json.status === "COMPLETED"
+          ) {
+            if (intervalsRef.current[groupId]) {
+              clearInterval(intervalsRef.current[groupId] as NodeJS.Timeout);
+              intervalsRef.current[groupId] = null;
+            }
+          }
+        })
+        .catch(() => {
+          notifications.show({
+            message: "Error occurred!",
+          });
+        });
+    },
+    [authHeader]
+  );
+
   const handleVoucherCreation = () => {
     const eligibleSelectedGroupMembers = selectedGroupMembers.filter(
       (selectedGroupMember) => {
-        return (
-          !selectedGroupMember.activationCodeFormatted &&
-          selectedGroupMember.typeForVoucher !== null
-        );
+        return selectedGroupMember.typeForVoucher !== null;
       }
     );
+
     if (eligibleSelectedGroupMembers.length === 0) {
       return;
     }
@@ -302,8 +343,16 @@ const GroupTable = () => {
       );
       generateVouchers(groupId, payloadForVoucherGeneration);
     }
+    selectedGroupIds.forEach((id) => {
+      if (!intervalsRef.current[id]) {
+        intervalsRef.current[id] = setInterval(() => {
+          console.log(`This is the set interval for group ${id}`);
+          fetchStatus(id);
+        }, 10000);
+      }
+    });
   };
-  console.log("the eligible members are", selectedGroupMembers);
+
   return (
     <>
       <Stack h={"100vh"} gap={"xl"} bg={"aliceblue"}>
