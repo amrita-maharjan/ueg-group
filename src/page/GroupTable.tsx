@@ -69,16 +69,15 @@ const GroupTable = () => {
     setSelectedGroupMembers([]);
   }, [groupId]);
 
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+
   const fetchGroupMemberById = useCallback((contactId: string) => {
     setIsMembersLoading(true);
-    fetch(
-      `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups/${contactId}`,
-      {
-        headers: {
-          Authorization: authHeader,
-        },
-      }
-    )
+    fetch(`${baseUrl}/api/v1/groups/${contactId}`, {
+      headers: {
+        Authorization: authHeader,
+      },
+    })
       .then((res) => res.json())
       .then((json) => {
         setGroupMembers(json);
@@ -97,17 +96,14 @@ const GroupTable = () => {
   const generateVouchers = useCallback(
     (groupId: string, payload: GroupMemberPayload) => {
       setIsGeneratingVouchers(true);
-      fetch(
-        `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups/generate-vouchers/${groupId}`,
-        {
-          method: "POST",
-          body: JSON.stringify(payload),
-          headers: {
-            Authorization: authHeader,
-            "Content-Type": "application/json",
-          },
-        }
-      )
+      fetch(`${baseUrl}/api/v1/groups/generate-vouchers/${groupId}`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/json",
+        },
+      })
         .then((res) => res.json())
         .then(() => {
           setIsGeneratingVouchers(false);
@@ -133,7 +129,7 @@ const GroupTable = () => {
     (groupId: string, payload: GroupMemberPayload) => {
       setIsAutoRedeemingVouchers(true);
       fetch(
-        `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups/generate-vouchers/${groupId}/auto-redeem`,
+        `${baseUrl}/api/v1/groups/generate-vouchers/${groupId}/auto-redeem`,
         {
           method: "POST",
           body: JSON.stringify(payload),
