@@ -262,19 +262,8 @@ const GroupTable = () => {
     setIsChecked(event.target.checked);
   };
 
-  const handleLoading = () => {
-    setLoadingGroups((prev) => {
-      const updatedState = { ...prev, [groupId]: true };
-      return updatedState;
-    });
-
-    setTimeout(() => {
-      setLoadingGroups((prev) => ({ ...prev, [groupId]: false }));
-    }, 60000);
-  };
-
   const intervalsRef = useRef<{ [key: string]: NodeJS.Timeout | null }>({});
-
+  console.log("the interval are", intervalsRef);
   const fetchStatus = useCallback(
     (groupId: string) => {
       fetch(
@@ -296,6 +285,7 @@ const GroupTable = () => {
             if (intervalsRef.current[groupId]) {
               clearInterval(intervalsRef.current[groupId] as NodeJS.Timeout);
               intervalsRef.current[groupId] = null;
+              setLoadingGroups((prev) => ({ ...prev, [groupId]: false }));
             }
           }
         })
@@ -318,7 +308,10 @@ const GroupTable = () => {
     if (eligibleSelectedGroupMembers.length === 0) {
       return;
     }
-
+    setLoadingGroups((prev) => {
+      const updatedState = { ...prev, [groupId]: true };
+      return updatedState;
+    });
     if (isChecked) {
       const eligibleForAutoRedeem = selectedGroupMembers.filter(
         (selectedGroupMember) => selectedGroupMember.openID
@@ -343,6 +336,7 @@ const GroupTable = () => {
       );
       generateVouchers(groupId, payloadForVoucherGeneration);
     }
+    console.log("we are here");
     selectedGroupIds.forEach((id) => {
       if (!intervalsRef.current[id]) {
         intervalsRef.current[id] = setInterval(() => {
@@ -388,14 +382,6 @@ const GroupTable = () => {
                   <Text c={"gray"} size="sm">
                     Please select a group to get started!
                   </Text>
-                  {/* <Button
-                    onClick={() => {
-                      setShouldOpenDropdown(true);
-                    }}
-                    mt="md"
-                  >
-                    Click
-                  </Button> */}
                 </Stack>
               </Card.Section>
             </Card>
@@ -483,7 +469,6 @@ const GroupTable = () => {
         onOkayClick={() => {
           close();
           handleVoucherCreation();
-          handleLoading();
         }}
       />
     </>

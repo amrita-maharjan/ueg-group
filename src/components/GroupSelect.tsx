@@ -74,7 +74,7 @@ export const GroupSelect = ({ onGroupSelect, loadingGroups }: Props) => {
     const isLoading = loadingGroups?.[option.value];
 
     return (
-      <Flex gap="xl" justify={"space-between"}>
+      <Flex gap="sm" justify={"space-between"}>
         {checked && (
           <IconCheck style={{ marginInlineStart: "auto" }} {...GroupSelect} />
         )}
@@ -93,7 +93,6 @@ export const GroupSelect = ({ onGroupSelect, loadingGroups }: Props) => {
         w={"30vw"}
         bg={"white"}
         placeholder="Select a group"
-        // dropdownOpened={dropdownOpened}
         data={sortedGroupData.map((group) => {
           const isLoading = loadingGroups[group.contactId];
 
