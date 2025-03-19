@@ -74,12 +74,14 @@ export const GroupSelect = ({ onGroupSelect, loadingGroups }: Props) => {
     const isLoading = loadingGroups?.[option.value];
 
     return (
-      <Flex gap="sm" justify={"space-between"}>
+      <Flex style={{ flexGrow: 2 }}>
         {checked && (
           <IconCheck style={{ marginInlineStart: "auto" }} {...GroupSelect} />
         )}
         {option.label}
-        {isLoading && <Loader size={15} />}
+        <Flex justify={"flex-end"} style={{ flexGrow: 2 }}>
+          {isLoading && <Loader size={15} />}
+        </Flex>
       </Flex>
     );
   };

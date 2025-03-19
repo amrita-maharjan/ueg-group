@@ -170,11 +170,7 @@ const GroupTable = () => {
         : [...prev, groupMember.id]
     );
 
-    setSelectedGroupIds((prev) =>
-      prev.includes(groupId)
-        ? prev.filter((id) => id !== groupId)
-        : [...prev, groupId]
-    );
+    setSelectedGroupIds((prev) => [...prev, groupId]);
 
     setSelectedGroupMembers((prev) =>
       prev.some((row) => row.id === groupMember.id)
@@ -230,18 +226,16 @@ const GroupTable = () => {
   const rows = groupMembers.map((members) => (
     <Table.Tr key={members.id}>
       <Table.Td>
-        {
-          // !members.activationCodeFormatted &&
+        {!members.activationCodeFormatted &&
           members.typeForVoucher != null &&
-            members.paymentStatus != "CANCELED" &&
-            members.paymentStatus != "CANCELED_GROUP_INVENTORY" && (
-              <Checkbox
-                key={members.id}
-                checked={selectedRowIds.includes(members.id)}
-                onChange={() => handleRowSelection(members)}
-              />
-            )
-        }
+          members.paymentStatus != "CANCELED" &&
+          members.paymentStatus != "CANCELED_GROUP_INVENTORY" && (
+            <Checkbox
+              key={members.id}
+              checked={selectedRowIds.includes(members.id)}
+              onChange={() => handleRowSelection(members)}
+            />
+          )}
       </Table.Td>
       <Table.Td>{members.firstName}</Table.Td>
       <Table.Td>{members.lastName}</Table.Td>
@@ -336,7 +330,8 @@ const GroupTable = () => {
       );
       generateVouchers(groupId, payloadForVoucherGeneration);
     }
-    console.log("we are here");
+    console.log("we are here", groupId);
+    console.log("selectedIds are", selectedGroupIds);
     selectedGroupIds.forEach((id) => {
       if (!intervalsRef.current[id]) {
         intervalsRef.current[id] = setInterval(() => {
