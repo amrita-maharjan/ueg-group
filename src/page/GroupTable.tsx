@@ -45,6 +45,7 @@ const GroupTable = () => {
   const authHeader = useAuthHeader();
   const [groupName, setGroupName] = useState("");
   const [groupId, setGroupId] = useState("");
+  //@ts-ignore
   const [MembersStatus, setMemberStatus] = useState({});
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [loadingGroups, setLoadingGroups] = useState<{
