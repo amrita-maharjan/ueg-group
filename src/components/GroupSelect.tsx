@@ -1,8 +1,9 @@
-import { Flex, Select, Loader, SelectProps } from "@mantine/core";
+import { Flex, Loader, Select, SelectProps } from "@mantine/core";
 import React from "react";
 import { Group as Groups } from "../types/Group";
 
 import { IconCheck } from "@tabler/icons-react";
+import { useSearchParams } from "react-router-dom";
 import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
 
 type Props = {
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export const GroupSelect = ({ onGroupSelect, loadingGroups }: Props) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isGroupLoading, setIsGroupLoading] = React.useState<boolean>(false);
   const [groups, setGroups] = React.useState<Groups[]>([]);
   const authHeader = useAuthHeader();
@@ -34,11 +36,19 @@ export const GroupSelect = ({ onGroupSelect, loadingGroups }: Props) => {
       .then((data) => {
         setGroups(data);
         setIsGroupLoading(false);
+        const selectedGroupId = searchParams.get("group-id");
+        const selectedGroup = (data as Groups[]).find(
+          (group) => String(group.contactId) === selectedGroupId
+        );
+        if (selectedGroup) {
+          onGroupSelect(selectedGroup.contactId, selectedGroup.name);
+        }
       });
   }, []);
 
   const handleSelect = (value: string | null) => {
     if (value) {
+      setSearchParams({ "group-id": value });
       const selectedGroup = groups.find(
         (group) => String(group.contactId) === value
       );
@@ -55,10 +65,8 @@ export const GroupSelect = ({ onGroupSelect, loadingGroups }: Props) => {
     const isLoading = loadingGroups?.[option.value];
 
     return (
-      <Flex style={{ flexGrow: 2 }}>
-        {checked && (
-          <IconCheck style={{ marginInlineStart: "auto" }} {...GroupSelect} />
-        )}
+      <Flex style={{ flexGrow: 2 }} gap={"sm"} align={"center"}>
+        {checked && <IconCheck size={16} {...GroupSelect} />}
         {option.label}
         <Flex justify={"flex-end"} style={{ flexGrow: 2 }}>
           {isLoading && <Loader size={15} />}
@@ -76,9 +84,9 @@ export const GroupSelect = ({ onGroupSelect, loadingGroups }: Props) => {
         w={"30vw"}
         bg={"white"}
         placeholder="Select a group"
+        value={searchParams.get("group-id")}
         data={sortedGroupData.map((group) => {
           const isLoading = loadingGroups[group.contactId];
-
           return {
             value: String(group.contactId),
             label: group.name ? group.name.toLowerCase() : "No Name",
