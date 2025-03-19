@@ -110,7 +110,7 @@ const GroupTable = () => {
           notifications.show({
             color: "green",
             title: "Voucher generation triggered",
-            message: "Please check back in a few minutes",
+            message: "Please check back in a while",
           });
         })
         .catch(() => {
@@ -145,7 +145,7 @@ const GroupTable = () => {
           notifications.show({
             color: "green",
             title: "Voucher auto-redeem triggered",
-            message: "Please check back in a few minutes",
+            message: "Please check back in a while",
           });
         })
         .catch(() => {
@@ -245,7 +245,6 @@ const GroupTable = () => {
 
   const handleAutoRedeem = () => {
     const hasOpenID = groupMembers.some((member) => member.openID);
-    console.log("the open id are", hasOpenId);
     setHasOpenId(hasOpenID);
   };
 
@@ -254,17 +253,14 @@ const GroupTable = () => {
   };
 
   const intervalsRef = useRef<{ [key: string]: NodeJS.Timeout | null }>({});
-  console.log("the interval are", intervalsRef);
+
   const fetchStatus = useCallback(
     (groupId: string) => {
-      fetch(
-        `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups/generate-vouchers/status/${groupId}`,
-        {
-          headers: {
-            Authorization: authHeader,
-          },
-        }
-      )
+      fetch(`${baseUrl}/api/v1/groups/generate-vouchers/status/${groupId}`, {
+        headers: {
+          Authorization: authHeader,
+        },
+      })
         .then((res) => res.json())
         .then((json) => {
           setMemberStatus(json);
@@ -314,12 +310,16 @@ const GroupTable = () => {
         groupName,
         eligibleForAutoRedeem
       );
-      autoRedeemVouchers(groupId, payloadForAutoRedeem);
+      if (payloadForAutoRedeem.vouchers.length > 0) {
+        autoRedeemVouchers(groupId, payloadForAutoRedeem);
+      }
       const payloadForVoucherGeneration = createPayloadForVoucherGeneration(
         groupName,
         notEligibleForAutoRedeem
       );
-      generateVouchers(groupId, payloadForVoucherGeneration);
+      if (payloadForVoucherGeneration.vouchers.length > 0) {
+        generateVouchers(groupId, payloadForVoucherGeneration);
+      }
     } else {
       const payloadForVoucherGeneration = createPayloadForVoucherGeneration(
         groupName,
@@ -327,12 +327,9 @@ const GroupTable = () => {
       );
       generateVouchers(groupId, payloadForVoucherGeneration);
     }
-    console.log("we are here", groupId);
-    console.log("selectedIds are", selectedGroupIds);
     selectedGroupIds.forEach((id) => {
       if (!intervalsRef.current[id]) {
         intervalsRef.current[id] = setInterval(() => {
-          console.log(`This is the set interval for group ${id}`);
           fetchStatus(id);
         }, 10000);
       }
