@@ -38,11 +38,12 @@ export function Login() {
       },
     },
   });
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
   const handleSubmit = (values: { uName: string; password: string }) => {
     setIsLoading(true);
 
-    fetch("https://mondial-ueg-group-6fea23ebc309.herokuapp.com/auth/login", {
+    fetch(`${baseUrl}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

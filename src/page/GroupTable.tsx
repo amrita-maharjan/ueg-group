@@ -12,7 +12,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconArrowRight, IconSearch } from "@tabler/icons-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ConfirmationModal } from "../components/ConfirmationModal";
 import Header from "../components/Header";
@@ -45,7 +45,9 @@ const GroupTable = () => {
   const authHeader = useAuthHeader();
   const [groupName, setGroupName] = useState("");
   const [groupId, setGroupId] = useState("");
-
+  //@ts-ignore
+  const [MembersStatus, setMemberStatus] = useState({});
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [loadingGroups, setLoadingGroups] = useState<{
     [key: string]: boolean;
   }>({});
@@ -67,16 +69,15 @@ const GroupTable = () => {
     setSelectedGroupMembers([]);
   }, [groupId]);
 
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+
   const fetchGroupMemberById = useCallback((contactId: string) => {
     setIsMembersLoading(true);
-    fetch(
-      `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups/${contactId}`,
-      {
-        headers: {
-          Authorization: authHeader,
-        },
-      }
-    )
+    fetch(`${baseUrl}/api/v1/groups/${contactId}`, {
+      headers: {
+        Authorization: authHeader,
+      },
+    })
       .then((res) => res.json())
       .then((json) => {
         setGroupMembers(json);
@@ -95,17 +96,14 @@ const GroupTable = () => {
   const generateVouchers = useCallback(
     (groupId: string, payload: GroupMemberPayload) => {
       setIsGeneratingVouchers(true);
-      fetch(
-        `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups/generate-vouchers/${groupId}`,
-        {
-          method: "POST",
-          body: JSON.stringify(payload),
-          headers: {
-            Authorization: authHeader,
-            "Content-Type": "application/json",
-          },
-        }
-      )
+      fetch(`${baseUrl}/api/v1/groups/generate-vouchers/${groupId}`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/json",
+        },
+      })
         .then((res) => res.json())
         .then(() => {
           setIsGeneratingVouchers(false);
@@ -131,7 +129,7 @@ const GroupTable = () => {
     (groupId: string, payload: GroupMemberPayload) => {
       setIsAutoRedeemingVouchers(true);
       fetch(
-        `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups/generate-vouchers/${groupId}/auto-redeem`,
+        `${baseUrl}/api/v1/groups/generate-vouchers/${groupId}/auto-redeem`,
         {
           method: "POST",
           body: JSON.stringify(payload),
@@ -168,6 +166,9 @@ const GroupTable = () => {
         ? prev.filter((id) => id !== groupMember.id)
         : [...prev, groupMember.id]
     );
+
+    setSelectedGroupIds((prev) => [...prev, groupId]);
+
     setSelectedGroupMembers((prev) =>
       prev.some((row) => row.id === groupMember.id)
         ? prev.filter(
@@ -180,7 +181,6 @@ const GroupTable = () => {
         : [...prev, groupMember]
     );
   };
-  console.log("the selected group members are", selectedGroupMembers);
 
   const allSelected =
     selectedRowIds.length === groupMembers.length && groupMembers.length > 0;
@@ -252,32 +252,57 @@ const GroupTable = () => {
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsChecked(event.target.checked);
   };
-  const handleLoading = () => {
-    console.log("Before updating:", loadingGroups);
-    setLoadingGroups((prev) => {
-      const updatedState = { ...prev, [groupId]: true };
-      console.log("Updated loadingGroups:", updatedState);
-      return updatedState;
-    });
-    console.log("After setting loading true:", loadingGroups);
-    setTimeout(() => {
-      setLoadingGroups((prev) => ({ ...prev, [groupId]: false }));
-    }, 60000);
-  };
+
+  const intervalsRef = useRef<{ [key: string]: NodeJS.Timeout | null }>({});
+  console.log("the interval are", intervalsRef);
+  const fetchStatus = useCallback(
+    (groupId: string) => {
+      fetch(
+        `https://mondial-ueg-group-6fea23ebc309.herokuapp.com/api/v1/groups/generate-vouchers/status/${groupId}`,
+        {
+          headers: {
+            Authorization: authHeader,
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then((json) => {
+          setMemberStatus(json);
+          if (
+            json.status === "NOT_FOUND" ||
+            json.status === "FAILED" ||
+            json.status === "COMPLETED"
+          ) {
+            if (intervalsRef.current[groupId]) {
+              clearInterval(intervalsRef.current[groupId] as NodeJS.Timeout);
+              intervalsRef.current[groupId] = null;
+              setLoadingGroups((prev) => ({ ...prev, [groupId]: false }));
+            }
+          }
+        })
+        .catch(() => {
+          notifications.show({
+            message: "Error occurred!",
+          });
+        });
+    },
+    [authHeader]
+  );
 
   const handleVoucherCreation = () => {
     const eligibleSelectedGroupMembers = selectedGroupMembers.filter(
       (selectedGroupMember) => {
-        return (
-          !selectedGroupMember.activationCodeFormatted &&
-          selectedGroupMember.typeForVoucher !== null
-        );
+        return selectedGroupMember.typeForVoucher !== null;
       }
     );
+
     if (eligibleSelectedGroupMembers.length === 0) {
       return;
     }
-
+    setLoadingGroups((prev) => {
+      const updatedState = { ...prev, [groupId]: true };
+      return updatedState;
+    });
     if (isChecked) {
       const eligibleForAutoRedeem = selectedGroupMembers.filter(
         (selectedGroupMember) => selectedGroupMember.openID
@@ -302,8 +327,18 @@ const GroupTable = () => {
       );
       generateVouchers(groupId, payloadForVoucherGeneration);
     }
+    console.log("we are here", groupId);
+    console.log("selectedIds are", selectedGroupIds);
+    selectedGroupIds.forEach((id) => {
+      if (!intervalsRef.current[id]) {
+        intervalsRef.current[id] = setInterval(() => {
+          console.log(`This is the set interval for group ${id}`);
+          fetchStatus(id);
+        }, 10000);
+      }
+    });
   };
-  console.log("the eligible members are", selectedGroupMembers);
+
   return (
     <>
       <Stack h={"100vh"} gap={"xl"} bg={"aliceblue"}>
@@ -339,14 +374,6 @@ const GroupTable = () => {
                   <Text c={"gray"} size="sm">
                     Please select a group to get started!
                   </Text>
-                  {/* <Button
-                    onClick={() => {
-                      setShouldOpenDropdown(true);
-                    }}
-                    mt="md"
-                  >
-                    Click
-                  </Button> */}
                 </Stack>
               </Card.Section>
             </Card>
@@ -434,7 +461,6 @@ const GroupTable = () => {
         onOkayClick={() => {
           close();
           handleVoucherCreation();
-          handleLoading();
         }}
       />
     </>
