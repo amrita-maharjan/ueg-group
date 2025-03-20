@@ -10,3 +10,6 @@ export const voucherGenerate = (groupId: string) =>
 
 export const statusGenerate = (groupId: string) =>
   `${baseUrl}/api/v1/groups/generate-vouchers/status/${groupId}`;
+
+export const GenerateAutoReedem = (groupId: string) =>
+  `${baseUrl}/api/v1/groups/generate-vouchers/${groupId}/auto-redeem`;

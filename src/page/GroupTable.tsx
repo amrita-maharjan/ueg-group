@@ -25,6 +25,7 @@ import {
 } from "../utils/create-payload";
 import { fetchData, postData } from "../api/api-client";
 import {
+  GenerateAutoReedem,
   groupmMembersById,
   statusGenerate,
   voucherGenerate,
@@ -33,6 +34,7 @@ import { status } from "../types/Status";
 
 const GroupTable = () => {
   const navigate = useNavigate();
+  const statusList = ["NOT_FOUND", "FAILED", "COMPLETED"];
 
   const [shouldOpenDropdown, setShouldOpenDropdown] = useState<boolean>(false);
   const [selectedGroupMembers, setSelectedGroupMembers] = useState<
@@ -40,11 +42,6 @@ const GroupTable = () => {
   >([]);
   const [groupMembers, setGroupMembers] = useState<GroupMembers[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(false);
-  //@ts-ignore
-  const [isGeneratingVouchers, setIsGeneratingVouchers] = useState(false);
-  //@ts-ignoreyarn build
-
-  const [isAutoRedeemingVouchers, setIsAutoRedeemingVouchers] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [isChecked, setIsChecked] = useState(false);
@@ -52,8 +49,6 @@ const GroupTable = () => {
   const authHeader = useAuthHeader();
   const [groupName, setGroupName] = useState("");
   const [groupId, setGroupId] = useState("");
-  //@ts-ignore
-  const [MembersStatus, setMemberStatus] = useState({});
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [loadingGroups, setLoadingGroups] = useState<{
     [key: string]: boolean;
@@ -88,8 +83,6 @@ const GroupTable = () => {
 
   const generateVouchers = useCallback(
     async (groupId: string, payload: GroupMemberPayload) => {
-      setIsGeneratingVouchers(true);
-
       await postData(voucherGenerate(groupId), payload);
 
       notifications.show({
@@ -103,9 +96,7 @@ const GroupTable = () => {
 
   const autoRedeemVouchers = useCallback(
     async (groupId: string, payload: GroupMemberPayload) => {
-      setIsAutoRedeemingVouchers(true);
-
-      await postData(voucherGenerate(groupId), payload);
+      await postData(GenerateAutoReedem(groupId), payload);
 
       notifications.show({
         color: "green",
@@ -190,6 +181,7 @@ const GroupTable = () => {
             />
           )}
       </Table.Td>
+      <Table.Td>{members.internalNumber}</Table.Td>
       <Table.Td>{members.firstName}</Table.Td>
       <Table.Td>{members.lastName}</Table.Td>
 
@@ -215,9 +207,7 @@ const GroupTable = () => {
       try {
         const result = await fetchData<status>(statusGenerate(groupId));
 
-        setMemberStatus(result);
-
-        if (["NOT_FOUND", "FAILED", "COMPLETED"].includes(result.status)) {
+        if (statusList.includes(result.status)) {
           if (intervalsRef.current[groupId]) {
             clearInterval(intervalsRef.current[groupId] as NodeJS.Timeout);
             delete intervalsRef.current[groupId];
@@ -366,6 +356,7 @@ const GroupTable = () => {
                           />
                         ) : null}
                       </Table.Td>
+                      <Table.Th>ID</Table.Th>
                       <Table.Th>First Name</Table.Th>
                       <Table.Th>Last Name</Table.Th>
                       <Table.Th> Code Formatted</Table.Th>

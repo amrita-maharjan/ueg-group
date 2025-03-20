@@ -1,5 +1,6 @@
 export type GroupMembers = {
   id: string;
+  internalNumber: number;
   firstName: string;
   lastName: string;
   activationCodeFormatted: string;
