@@ -7,3 +7,6 @@ export const groupmMembersById = (contactId: string) =>
 
 export const voucherGenerate = (groupId: string) =>
   `${baseUrl}/api/v1/groups/generate-vouchers/${groupId}`;
+
+export const statusGenerate = (groupId: string) =>
+  `${baseUrl}/api/v1/groups/generate-vouchers/status/${groupId}`;
