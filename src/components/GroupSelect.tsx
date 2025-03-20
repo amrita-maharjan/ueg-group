@@ -4,7 +4,8 @@ import { Group as Groups } from "../types/Group";
 
 import { IconCheck } from "@tabler/icons-react";
 import { useSearchParams } from "react-router-dom";
-import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
+import { fetchData } from "../api/api-client";
+import { groupMembersUrl } from "../api/api-urls";
 
 type Props = {
   onGroupSelect: (id: string, name: string) => void;
@@ -18,32 +19,23 @@ export const GroupSelect = ({ onGroupSelect, loadingGroups }: Props) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isGroupLoading, setIsGroupLoading] = React.useState<boolean>(false);
   const [groups, setGroups] = React.useState<Groups[]>([]);
-  const authHeader = useAuthHeader();
 
-  const baseUrl = import.meta.env.VITE_BASE_URL;
+  const fetchGroup = async () => {
+    setIsGroupLoading(true);
+    const result = await fetchData<Groups[]>(groupMembersUrl);
+    setGroups(result);
+    const selectedGroupId = searchParams.get("group-id");
+    const selectedGroup = result.find(
+      (group) => group.contactId === selectedGroupId
+    );
+    if (selectedGroup) {
+      onGroupSelect(selectedGroup.contactId, selectedGroup.name);
+    }
+    setIsGroupLoading(false);
+  };
 
   React.useEffect(() => {
-    setIsGroupLoading(true);
-
-    fetch(`${baseUrl}/api/v1/groups`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setGroups(data);
-        setIsGroupLoading(false);
-        const selectedGroupId = searchParams.get("group-id");
-        const selectedGroup = (data as Groups[]).find(
-          (group) => String(group.contactId) === selectedGroupId
-        );
-        if (selectedGroup) {
-          onGroupSelect(selectedGroup.contactId, selectedGroup.name);
-        }
-      });
+    fetchGroup();
   }, []);
 
   const handleSelect = (value: string | null) => {
