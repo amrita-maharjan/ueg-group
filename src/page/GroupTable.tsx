@@ -23,6 +23,8 @@ import {
   createPayloadForAutoRedeem,
   createPayloadForVoucherGeneration,
 } from "../utils/create-payload";
+import { fetchData, postData } from "../api/api-client";
+import { groupmMembersById, voucherGenerate } from "../api/api-urls";
 
 const GroupTable = () => {
   const navigate = useNavigate();
@@ -71,56 +73,37 @@ const GroupTable = () => {
 
   const baseUrl = import.meta.env.VITE_BASE_URL;
 
-  const fetchGroupMemberById = useCallback((contactId: string) => {
+  const fetchGroupMemberById = useCallback(async (contactId: string) => {
     setIsMembersLoading(true);
-    fetch(`${baseUrl}/api/v1/groups/${contactId}`, {
-      headers: {
-        Authorization: authHeader,
-      },
-    })
-      .then((res) => res.json())
-      .then((json) => {
-        setGroupMembers(json);
-        setIsMembersLoading(false);
-      })
-      .catch(() => {
-        setIsMembersLoading(false);
-        notifications.show({
-          color: "red",
-          title: "Error",
-          message: "Error occurred!",
-        });
-      });
+
+    const result = await fetchData<GroupMembers[]>(
+      groupmMembersById(contactId)
+    );
+    setIsMembersLoading(false);
+    setGroupMembers(result);
   }, []);
 
   const generateVouchers = useCallback(
-    (groupId: string, payload: GroupMemberPayload) => {
-      setIsGeneratingVouchers(true);
-      fetch(`${baseUrl}/api/v1/groups/generate-vouchers/${groupId}`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: {
-          Authorization: authHeader,
-          "Content-Type": "application/json",
-        },
-      })
-        .then((res) => res.json())
-        .then(() => {
-          setIsGeneratingVouchers(false);
-          notifications.show({
-            color: "green",
-            title: "Voucher generation triggered",
-            message: "Please check back in a while",
-          });
-        })
-        .catch(() => {
-          setIsGeneratingVouchers(false);
-          notifications.show({
-            color: "red",
-            title: "Failed to generate vouchers",
-            message: "Error occurred!",
-          });
+    async (groupId: string, payload: GroupMemberPayload) => {
+      try {
+        setIsGeneratingVouchers(true);
+
+        await postData(voucherGenerate(groupId), payload);
+
+        notifications.show({
+          color: "green",
+          title: "Voucher generation triggered",
+          message: "Please check back in a while",
         });
+      } catch (error) {
+        notifications.show({
+          color: "red",
+          title: "Failed to generate vouchers",
+          message: "Error occurred!",
+        });
+      } finally {
+        setIsGeneratingVouchers(false);
+      }
     },
     []
   );
