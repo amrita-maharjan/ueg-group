@@ -9,4 +9,9 @@ export type GroupMembers = {
   primaryEmail: string;
   paymentStatus: string;
   remarks: string[];
+  registrations: Array<{
+    uniqueCode: string;
+    paymentStatus: string;
+    typeForVoucher: number;
+  }>;
 };
