@@ -14,23 +14,23 @@ import { notifications } from "@mantine/notifications";
 import { IconArrowRight, IconSearch } from "@tabler/icons-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchData, postData } from "../api/api-client";
+import {
+  GenerateAutoRedeem,
+  groupMembersById,
+  statusGenerate,
+  voucherGenerate,
+} from "../api/api-urls";
 import { ConfirmationModal } from "../components/ConfirmationModal";
 import Header from "../components/Header";
 import { useAuthHeader } from "../hooks.tsx/useIsAuthenticated";
 import { GroupMemberPayload } from "../types/GroupMemberPayload";
 import { GroupMembers } from "../types/GroupMembers";
+import { status } from "../types/Status";
 import {
   createPayloadForAutoRedeem,
   createPayloadForVoucherGeneration,
 } from "../utils/create-payload";
-import { fetchData, postData } from "../api/api-client";
-import {
-  GenerateAutoReedem,
-  groupmMembersById,
-  statusGenerate,
-  voucherGenerate,
-} from "../api/api-urls";
-import { status } from "../types/Status";
 
 const GroupTable = () => {
   const navigate = useNavigate();
@@ -44,7 +44,7 @@ const GroupTable = () => {
   const [isMembersLoading, setIsMembersLoading] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
-  const [isChecked, setIsChecked] = useState(false);
+  const [shouldAutoRedeem, setShouldAutoRedeem] = useState(false);
   const [hasOpenId, setHasOpenId] = useState(false);
   const authHeader = useAuthHeader();
   const [groupName, setGroupName] = useState("");
@@ -73,10 +73,7 @@ const GroupTable = () => {
 
   const fetchGroupMemberById = useCallback(async (contactId: string) => {
     setIsMembersLoading(true);
-
-    const result = await fetchData<GroupMembers[]>(
-      groupmMembersById(contactId)
-    );
+    const result = await fetchData<GroupMembers[]>(groupMembersById(contactId));
     setIsMembersLoading(false);
     setGroupMembers(result);
   }, []);
@@ -96,7 +93,7 @@ const GroupTable = () => {
 
   const autoRedeemVouchers = useCallback(
     async (groupId: string, payload: GroupMemberPayload) => {
-      await postData(GenerateAutoReedem(groupId), payload);
+      await postData(GenerateAutoRedeem(groupId), payload);
 
       notifications.show({
         color: "green",
@@ -159,7 +156,6 @@ const GroupTable = () => {
       const allSelectableRows = groupMembers
         .filter((row) => !row.activationCodeFormatted)
         .map((row) => row.id);
-
       setSelectedRowIds(allSelectableRows);
       setSelectedGroupMembers(
         groupMembers.filter((row) => allSelectableRows.includes(row.id))
@@ -197,7 +193,7 @@ const GroupTable = () => {
   };
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setIsChecked(event.target.checked);
+    setShouldAutoRedeem(event.target.checked);
   };
 
   const intervalsRef = useRef<{ [key: string]: NodeJS.Timeout | null }>({});
@@ -237,7 +233,7 @@ const GroupTable = () => {
       const updatedState = { ...prev, [groupId]: true };
       return updatedState;
     });
-    if (isChecked) {
+    if (shouldAutoRedeem) {
       const eligibleForAutoRedeem = selectedGroupMembers.filter(
         (selectedGroupMember) => selectedGroupMember.openID
       );
@@ -383,7 +379,7 @@ const GroupTable = () => {
                 label="Auto-redeem the generated the voucher?"
                 disabled={!hasOpenId}
                 onChange={handleCheckboxChange}
-                checked={isChecked}
+                checked={shouldAutoRedeem}
               />
             </Stack>
           </>
