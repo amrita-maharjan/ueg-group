@@ -103,7 +103,7 @@ const GroupTable = () => {
     },
     []
   );
-
+  console.log("openid for autoreedem status", hasOpenId);
   const handleRowSelection = (groupMember: GroupMembers) => {
     setSelectedRowIds((prev) =>
       prev.includes(groupMember.id)
@@ -169,7 +169,7 @@ const GroupTable = () => {
         {!members.activationCodeFormatted &&
           members.typeForVoucher != null &&
           members.paymentStatus != "CANCELED" &&
-          members.paymentStatus != "CANCELED_GROUP_INVENTORY" && (
+          members.paymentStatus == "CANCELED_GROUP_INVENTORY" && ( //change it not
             <Checkbox
               key={members.id}
               checked={selectedRowIds.includes(members.id)}
@@ -194,9 +194,41 @@ const GroupTable = () => {
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setShouldAutoRedeem(event.target.checked);
+    if (selectedGroupIds) {
+      if (hasOpenId) {
+        selectedGroupIds.forEach((id) => {
+          if (!intervalsRef.current[id]) {
+            intervalsRef.current[id] = setInterval(() => {
+              fetchAutoreedemStatus(id);
+            }, 10000);
+          }
+        });
+      }
+    }
   };
 
   const intervalsRef = useRef<{ [key: string]: NodeJS.Timeout | null }>({});
+
+  const fetchAutoreedemStatus = useCallback(
+    async (groupId: string) => {
+      try {
+        const result = await fetchData<status>(statusGenerate(groupId));
+
+        if (statusList.includes(result.status)) {
+          if (intervalsRef.current[groupId]) {
+            clearInterval(intervalsRef.current[groupId] as NodeJS.Timeout);
+            delete intervalsRef.current[groupId];
+            setLoadingGroups((prev) => ({ ...prev, [groupId]: false }));
+          }
+        }
+      } catch (error) {
+        notifications.show({
+          message: "Error occurred!",
+        });
+      }
+    },
+    [authHeader]
+  );
 
   const fetchStatus = useCallback(
     async (groupId: string) => {
