@@ -23,9 +23,18 @@ import {
   createPayloadForAutoRedeem,
   createPayloadForVoucherGeneration,
 } from "../utils/create-payload";
+import { fetchData, postData } from "../api/api-client";
+import {
+  GenerateAutoReedem,
+  groupmMembersById,
+  statusGenerate,
+  voucherGenerate,
+} from "../api/api-urls";
+import { status } from "../types/Status";
 
 const GroupTable = () => {
   const navigate = useNavigate();
+  const statusList = ["NOT_FOUND", "FAILED", "COMPLETED"];
 
   const [shouldOpenDropdown, setShouldOpenDropdown] = useState<boolean>(false);
   const [selectedGroupMembers, setSelectedGroupMembers] = useState<
@@ -33,11 +42,6 @@ const GroupTable = () => {
   >([]);
   const [groupMembers, setGroupMembers] = useState<GroupMembers[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(false);
-  //@ts-ignore
-  const [isGeneratingVouchers, setIsGeneratingVouchers] = useState(false);
-  //@ts-ignoreyarn build
-
-  const [isAutoRedeemingVouchers, setIsAutoRedeemingVouchers] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [isChecked, setIsChecked] = useState(false);
@@ -45,8 +49,6 @@ const GroupTable = () => {
   const authHeader = useAuthHeader();
   const [groupName, setGroupName] = useState("");
   const [groupId, setGroupId] = useState("");
-  //@ts-ignore
-  const [MembersStatus, setMemberStatus] = useState({});
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [loadingGroups, setLoadingGroups] = useState<{
     [key: string]: boolean;
@@ -69,93 +71,38 @@ const GroupTable = () => {
     setSelectedGroupMembers([]);
   }, [groupId]);
 
-  const baseUrl = import.meta.env.VITE_BASE_URL;
-
-  const fetchGroupMemberById = useCallback((contactId: string) => {
+  const fetchGroupMemberById = useCallback(async (contactId: string) => {
     setIsMembersLoading(true);
-    fetch(`${baseUrl}/api/v1/groups/${contactId}`, {
-      headers: {
-        Authorization: authHeader,
-      },
-    })
-      .then((res) => res.json())
-      .then((json) => {
-        setGroupMembers(json);
-        setIsMembersLoading(false);
-      })
-      .catch(() => {
-        setIsMembersLoading(false);
-        notifications.show({
-          color: "red",
-          title: "Error",
-          message: "Error occurred!",
-        });
-      });
+
+    const result = await fetchData<GroupMembers[]>(
+      groupmMembersById(contactId)
+    );
+    setIsMembersLoading(false);
+    setGroupMembers(result);
   }, []);
 
   const generateVouchers = useCallback(
-    (groupId: string, payload: GroupMemberPayload) => {
-      setIsGeneratingVouchers(true);
-      fetch(`${baseUrl}/api/v1/groups/generate-vouchers/${groupId}`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: {
-          Authorization: authHeader,
-          "Content-Type": "application/json",
-        },
-      })
-        .then((res) => res.json())
-        .then(() => {
-          setIsGeneratingVouchers(false);
-          notifications.show({
-            color: "green",
-            title: "Voucher generation triggered",
-            message: "Please check back in a while",
-          });
-        })
-        .catch(() => {
-          setIsGeneratingVouchers(false);
-          notifications.show({
-            color: "red",
-            title: "Failed to generate vouchers",
-            message: "Error occurred!",
-          });
-        });
+    async (groupId: string, payload: GroupMemberPayload) => {
+      await postData(voucherGenerate(groupId), payload);
+
+      notifications.show({
+        color: "green",
+        title: "Voucher generation triggered",
+        message: "Please check back in a while",
+      });
     },
     []
   );
 
   const autoRedeemVouchers = useCallback(
-    (groupId: string, payload: GroupMemberPayload) => {
-      setIsAutoRedeemingVouchers(true);
-      fetch(
-        `${baseUrl}/api/v1/groups/generate-vouchers/${groupId}/auto-redeem`,
-        {
-          method: "POST",
-          body: JSON.stringify(payload),
-          headers: {
-            Authorization: authHeader,
-            "Content-Type": "application/json",
-          },
-        }
-      )
-        .then((res) => res.json())
-        .then(() => {
-          setIsAutoRedeemingVouchers(false);
-          notifications.show({
-            color: "green",
-            title: "Voucher auto-redeem triggered",
-            message: "Please check back in a while",
-          });
-        })
-        .catch(() => {
-          setIsAutoRedeemingVouchers(false);
-          notifications.show({
-            color: "red",
-            title: "Failed to auto-redeem vouchers",
-            message: "Error occurred!",
-          });
-        });
+    async (groupId: string, payload: GroupMemberPayload) => {
+      await postData(GenerateAutoReedem(groupId), payload);
+
+      notifications.show({
+        color: "green",
+        title: "Voucher auto-redeem triggered",
+        message: "Please check back in a while",
+      });
     },
     []
   );
@@ -234,6 +181,7 @@ const GroupTable = () => {
             />
           )}
       </Table.Td>
+      <Table.Td>{members.internalNumber}</Table.Td>
       <Table.Td>{members.firstName}</Table.Td>
       <Table.Td>{members.lastName}</Table.Td>
 
@@ -255,32 +203,22 @@ const GroupTable = () => {
   const intervalsRef = useRef<{ [key: string]: NodeJS.Timeout | null }>({});
 
   const fetchStatus = useCallback(
-    (groupId: string) => {
-      fetch(`${baseUrl}/api/v1/groups/generate-vouchers/status/${groupId}`, {
-        headers: {
-          Authorization: authHeader,
-        },
-      })
-        .then((res) => res.json())
-        .then((json) => {
-          setMemberStatus(json);
-          if (
-            json.status === "NOT_FOUND" ||
-            json.status === "FAILED" ||
-            json.status === "COMPLETED"
-          ) {
-            if (intervalsRef.current[groupId]) {
-              clearInterval(intervalsRef.current[groupId] as NodeJS.Timeout);
-              intervalsRef.current[groupId] = null;
-              setLoadingGroups((prev) => ({ ...prev, [groupId]: false }));
-            }
+    async (groupId: string) => {
+      try {
+        const result = await fetchData<status>(statusGenerate(groupId));
+
+        if (statusList.includes(result.status)) {
+          if (intervalsRef.current[groupId]) {
+            clearInterval(intervalsRef.current[groupId] as NodeJS.Timeout);
+            delete intervalsRef.current[groupId];
+            setLoadingGroups((prev) => ({ ...prev, [groupId]: false }));
           }
-        })
-        .catch(() => {
-          notifications.show({
-            message: "Error occurred!",
-          });
+        }
+      } catch (error) {
+        notifications.show({
+          message: "Error occurred!",
         });
+      }
     },
     [authHeader]
   );
@@ -418,6 +356,7 @@ const GroupTable = () => {
                           />
                         ) : null}
                       </Table.Td>
+                      <Table.Th>ID</Table.Th>
                       <Table.Th>First Name</Table.Th>
                       <Table.Th>Last Name</Table.Th>
                       <Table.Th> Code Formatted</Table.Th>
